@@ -3,6 +3,7 @@ from io import BytesIO
 from pydantic import BaseModel
 from transformers import AutoImageProcessor, AutoModelForImageClassification
 
+import os
 import pika
 import json
 import requests
@@ -13,6 +14,7 @@ from transformers import AutoImageProcessor, AutoModelForImageClassification
 class Element(BaseModel):
     type: str
     url: str
+    id: int
 
 
 
@@ -75,7 +77,7 @@ def callback(ch, method, properties, body):
 
 def start_definition_text_consumer():
     credentials = pika.PlainCredentials('guest', 'guest')
-    connection = pika.BlockingConnection(pika.ConnectionParameters('rabbitmq', 5672))
+    connection = pika.BlockingConnection(pika.ConnectionParameters(os.getenv('RABBITMQ_HOST'), os.getenv('RABBITMQ_PORT_CONTAINER')))
     channel = connection.channel()
 
     channel.exchange_declare(exchange='task_exchange', exchange_type='direct')
