@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"   
+      - "15672:15672" 
+    networks:
+      - basic-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    
+  ai_check_photo:
+    build: ai_check_photo
+    container_name: definition_text
+    environment:
+      - PYTHONUNBUFFERED=1
+      - RABBITMQ_HOST=rabbitmq
+    volumes:
+      - ./ai_check_photo/resnet-152-text-detector-ai:/app/resnet-152-text-detector-ai
+    depends_on:
+      rabbitmq:
+        condition: 
+          service_healthy
+    networks:
+      - basic-network
+
+
+  # log_consumer:
+  #   build:
+  #     context: .
+  #   container_name: log_consumer
+  #   environment:
+  #     - PYTHONUNBUFFERED=1
+  #   command: python log_consumer.py
+  #   depends_on:
+  #     - rabbitmq
+
+  # process_consumer:
+  #   build:
+  #     context: .
+  #   container_name: process_consumer
+  #   environment:
+  #     - PYTHONUNBUFFERED=1
+  #   command: python process_consumer.py
+  #   depends_on:
+  #     - rabbitmq
+
+  # notify_consumer:
+  #   build:
+  #     context: .
+  #   container_name: notify_consumer
+  #   environment:
+  #     - PYTHONUNBUFFERED=1
+  #   command: python notify_consumer.py
+  #   depends_on:
+  #     - rabbitmq
+
+networks:
+  basic-network:
