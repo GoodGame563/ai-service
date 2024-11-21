@@ -43,7 +43,7 @@ except:
     processor.save_pretrained(model_directory)
 
 def send_answer(success: bool, message:str, data: list = []):
-    with grpc.insecure_channel(f"{os.getenv("213.189.221.187")}:{os.getenv('GRPC_PORT')}") as channel:
+    with grpc.insecure_channel(f"{os.getenv("GRPC_HOST")}:{os.getenv('GRPC_PORT')}") as channel:
         stub = task_pb2_grpc.TaskServiceStub(channel)
         request = task_pb2.CheckPhotoRequest(
             success=success,
