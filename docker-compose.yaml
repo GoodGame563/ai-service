@@ -10,6 +10,8 @@ services:
       - RABBITMQ_PORT
       - RABBITMQ_LOGIN
       - RABBITMQ_PASSWORD
+      - GRPC_HOST
+      - GRPC_PORT
       - PYTHONUNBUFFERED=1
     volumes:
       - ./ai_check_photo/resnet-152-text-detector-ai:/app/resnet-152-text-detector-ai

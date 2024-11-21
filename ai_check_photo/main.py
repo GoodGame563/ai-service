@@ -43,14 +43,18 @@ except:
     processor.save_pretrained(model_directory)
 
 def send_answer(success: bool, message:str, data: list = []):
-    with grpc.insecure_channel(f"{os.getenv("GRPC_HOST")}:{os.getenv('GRPC_PORT')}") as channel:
-        stub = task_pb2_grpc.TaskServiceStub(channel)
-        request = task_pb2.CheckPhotoRequest(
-            success=success,
-            message=message,
-            data=data
-        )
-        response = stub.CheckPhoto(request)
+    try:
+        with grpc.insecure_channel(f"{os.getenv('GRPC_HOST')}:{os.getenv('GRPC_PORT')}") as channel:
+            stub = task_pb2_grpc.TaskServiceStub(channel)
+            request = task_pb2.CheckPhotoRequest(
+                success=success,
+                message=message,
+                data=data
+            )
+            response = stub.CheckPhoto(request)
+    except grpc.RpcError as e:
+        print(f"Error connecting to gRPC server: {e}")
+        return
 
 def callback(ch, method, properties, body):
     message = Element(**json.loads(body))
