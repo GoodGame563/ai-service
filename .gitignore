@@ -3,3 +3,4 @@
 *.safetensors
 test_*
 .env
+task_*

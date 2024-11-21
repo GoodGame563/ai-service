@@ -1,35 +1,18 @@
 version: '3.8'
 
 services:
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: ${RABBITMQ_HOST}
-    restart: unless-stopped
-    ports:
-      - "${RABBITMQ_PORT_DESKTOP}:${RABBITMQ_PORT_CONTAINER}"   
-      - "${RABBITMQ_PORT_DESKTOP_WEB_UI}:${RABBITMQ_PORT_CONTAINER_WEB_UI}" 
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-    networks:
-      - basic-network
-    
   ai_check_photo:
     build: ai_check_photo
     container_name: definition_text
     restart: unless-stopped
     environment:
       - RABBITMQ_HOST
-      - RABBITMQ_PORT_CONTAINER
+      - RABBITMQ_PORT
+      - RABBITMQ_LOGIN
+      - RABBITMQ_PASSWORD
       - PYTHONUNBUFFERED=1
     volumes:
       - ./ai_check_photo/resnet-152-text-detector-ai:/app/resnet-152-text-detector-ai
-    depends_on:
-      rabbitmq:
-        condition: 
-          service_healthy
     networks:
       - basic-network
 
