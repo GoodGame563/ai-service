@@ -11,7 +11,6 @@ import grpc
 import task_pb2
 import task_pb2_grpc
 import torch
-from transformers import AutoImageProcessor, AutoModelForImageClassification
 
 
 class Element(BaseModel):
