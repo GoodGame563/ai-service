@@ -55,7 +55,7 @@ except:
 
 
 execution_times_sec = []
-model = model.to(device)
+# model = model.to(device)
 # model = CLIPModel.from_pretrained().to(device)
 # processor = CLIPProcessor.from_pretrained()
    
