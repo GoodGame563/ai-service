@@ -15,6 +15,7 @@ from pydantic import BaseModel
 
 from tqdm import tqdm
 import datetime
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 
 class Element(BaseModel):
     Images: str
