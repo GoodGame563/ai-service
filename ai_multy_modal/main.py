@@ -45,7 +45,7 @@ model_directory = f"{model_name.split('/')[1]}"
 
 
 try:
-    model = Qwen2VLForConditionalGeneration.from_pretrained(model_directory)
+    model = Qwen2VLForConditionalGeneration.from_pretrained(model_directory, torch_dtype="auto", device_map="auto")
     processor = AutoProcessor.from_pretrained(model_directory)
 except:
     model = Qwen2VLForConditionalGeneration.from_pretrained(model_name, torch_dtype="auto", device_map="auto")
@@ -97,25 +97,25 @@ output_text = processor.batch_decode(
     generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False
 )
 print(output_text)
+print("end")
 
-
-with open(path_to_json, "r", encoding="utf-8") as f:
-    data = json.load(f)
-    for element in tqdm(data):
-        element = Element(**element)
-        start = datetime.datetime.now()
+# with open(path_to_json, "r", encoding="utf-8") as f:
+#     data = json.load(f)
+#     for element in tqdm(data):
+#         element = Element(**element)
+#         start = datetime.datetime.now()
 
 
 
         
-        end = datetime.datetime.now()
-        execution_time = (end - start).total_seconds()
-        execution_times_sec.append(execution_time)
+#         end = datetime.datetime.now()
+#         execution_time = (end - start).total_seconds()
+#         execution_times_sec.append(execution_time)
 
 
 
-    average_time_sec = sum(execution_times_sec) / len(data)
-    average_time_ms = average_time_sec * 1000
-    print(f"Среднее время выполнения datetime.now() в секундах: {average_time_sec:.10f} сек")
-    print(f"Среднее время выполнения datetime.now() в миллисекундах: {average_time_ms:.10f} мс")
+#     average_time_sec = sum(execution_times_sec) / len(data)
+#     average_time_ms = average_time_sec * 1000
+#     print(f"Среднее время выполнения datetime.now() в секундах: {average_time_sec:.10f} сек")
+#     print(f"Среднее время выполнения datetime.now() в миллисекундах: {average_time_ms:.10f} мс")
 
