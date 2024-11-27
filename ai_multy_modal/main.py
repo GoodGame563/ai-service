@@ -119,63 +119,52 @@
 # #     print(f"Среднее время выполнения datetime.now() в секундах: {average_time_sec:.10f} сек")
 # #     print(f"Среднее время выполнения datetime.now() в миллисекундах: {average_time_ms:.10f} мс")
 
+from PIL import Image
+import requests
+import torch
+from torchvision import io
+from typing import Dict
 from transformers import Qwen2VLForConditionalGeneration, AutoTokenizer, AutoProcessor
-from qwen_vl_utils import process_vision_info
 
-# default: Load the model on the available device(s)
+# Load the model in half-precision on the available device(s)
 model = Qwen2VLForConditionalGeneration.from_pretrained(
     "Qwen/Qwen2-VL-2B-Instruct", torch_dtype="auto", device_map="auto"
 )
-
-# We recommend enabling flash_attention_2 for better acceleration and memory saving, especially in multi-image and video scenarios.
-# model = Qwen2VLForConditionalGeneration.from_pretrained(
-#     "Qwen/Qwen2-VL-2B-Instruct",
-#     torch_dtype=torch.bfloat16,
-#     attn_implementation="flash_attention_2",
-#     device_map="auto",
-# )
-
-# default processer
 processor = AutoProcessor.from_pretrained("Qwen/Qwen2-VL-2B-Instruct")
 
-# The default range for the number of visual tokens per image in the model is 4-16384. You can set min_pixels and max_pixels according to your needs, such as a token count range of 256-1280, to balance speed and memory usage.
-# min_pixels = 256*28*28
-# max_pixels = 1280*28*28
-# processor = AutoProcessor.from_pretrained("Qwen/Qwen2-VL-2B-Instruct", min_pixels=min_pixels, max_pixels=max_pixels)
+# Image
+url = "https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-VL/assets/demo.jpeg"
+image = Image.open(requests.get(url, stream=True).raw)
 
-messages = [
+conversation = [
     {
         "role": "user",
         "content": [
             {
                 "type": "image",
-                "image": "https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-VL/assets/demo.jpeg",
             },
             {"type": "text", "text": "Describe this image."},
         ],
     }
 ]
 
-# Preparation for inference
-text = processor.apply_chat_template(
-    messages, tokenize=False, add_generation_prompt=True
-)
-image_inputs, video_inputs = process_vision_info(messages)
+
+# Preprocess the inputs
+text_prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
+# Excepted output: '<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n<|im_start|>user\n<|vision_start|><|image_pad|><|vision_end|>Describe this image.<|im_end|>\n<|im_start|>assistant\n'
+
 inputs = processor(
-    text=[text],
-    images=image_inputs,
-    videos=video_inputs,
-    padding=True,
-    return_tensors="pt",
+    text=[text_prompt], images=[image], padding=True, return_tensors="pt"
 )
 inputs = inputs.to("cuda")
 
 # Inference: Generation of the output
-generated_ids = model.generate(**inputs, max_new_tokens=128)
-generated_ids_trimmed = [
-    out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
+output_ids = model.generate(**inputs, max_new_tokens=128)
+generated_ids = [
+    output_ids[len(input_ids) :]
+    for input_ids, output_ids in zip(inputs.input_ids, output_ids)
 ]
 output_text = processor.batch_decode(
-    generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False
+    generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True
 )
 print(output_text)
