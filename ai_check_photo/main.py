@@ -2,6 +2,7 @@ from PIL import Image, UnidentifiedImageError
 from io import BytesIO
 from pydantic import BaseModel
 from transformers import AutoImageProcessor, AutoModelForImageClassification
+from dotenv import load_dotenv
 
 import os
 import pika
@@ -12,7 +13,7 @@ import task_pb2
 import task_pb2_grpc
 import torch
 
-
+load_dotenv()
 class Element(BaseModel):
     url: str
     id: int
