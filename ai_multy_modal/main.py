@@ -34,7 +34,7 @@ print(f"Is CUDA supported by this system? {torch.cuda.is_available()}")
 print(f"CUDA version: {torch.version.cuda}")
 
 if torch.cuda.is_available():
-    device = torch.device("cpu")
+    device = torch.device("cuda")
 else:
     device = torch.device("cpu")
 
