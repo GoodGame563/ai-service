@@ -44,14 +44,14 @@ model_name = "Qwen/Qwen2-VL-2B-Instruct"
 model_directory = f"{model_name.split('/')[1]}"
 
 
-# try:
-model = Qwen2VLForConditionalGeneration.from_pretrained(model_directory)
-processor = AutoProcessor.from_pretrained(model_directory)
-# except:
-#     model = Qwen2VLForConditionalGeneration.from_pretrained(model_name, torch_dtype="auto", device_map="auto")
-#     processor = AutoProcessor.from_pretrained(model_name)
-#     processor.save_pretrained(model_directory)
-#     model.save_pretrained(model_directory)
+try:
+    model = Qwen2VLForConditionalGeneration.from_pretrained(model_directory)
+    processor = AutoProcessor.from_pretrained(model_directory)
+except:
+    model = Qwen2VLForConditionalGeneration.from_pretrained(model_name, torch_dtype="auto", device_map="auto")
+    processor = AutoProcessor.from_pretrained(model_name)
+    processor.save_pretrained(model_directory)
+    model.save_pretrained(model_directory)
 
 
 execution_times_sec = []
