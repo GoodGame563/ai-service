@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package task_service.v1;
+
+option go_package = ".;task_service";
+
+import "google/protobuf/empty.proto";
+
+message TaskListRequest {
+    int64 userID = 1;
+}
+
+message ProductListItem {
+    int64 ID = 1;
+    string marketplace = 2;
+    int64 SKU = 3;
+    string name = 4;
+    string photoURL = 5;
+}
+
+message TaskListItem {
+    int64 ID = 1;
+    string url = 2;
+    string status = 3;
+    optional string errorDetails = 4;
+    optional ProductListItem product = 5;
+    string createdAt = 6;
+    string updatedAt = 7;
+}
+
+message TaskListResponse {
+    int64 userID = 1;
+    repeated TaskListItem tasks = 2;
+}
+
+message CreateTaskRequest {
+    int64 userID = 1;
+    string url = 2;
+}
+
+message CreateTaskResponse {
+    string status = 1;
+}
+
+message CheckPhotoData {
+    int64 id = 1;
+    bool value = 2; 
+}
+
+message CheckPhotoRequest {
+    bool success = 1;
+    string message = 2;
+    repeated CheckPhotoData data = 3;
+}
+  
+service TaskService {
+    rpc List (TaskListRequest) returns (TaskListResponse);
+    rpc Create (CreateTaskRequest) returns (CreateTaskResponse);
+    rpc CheckPhoto (CheckPhotoRequest) returns (google.protobuf.Empty);
+}

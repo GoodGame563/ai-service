@@ -7,12 +7,13 @@ import os
 import pika
 import json
 import requests
+import grpc
+import task_pb2
+import task_pb2_grpc
 import torch
-from transformers import AutoImageProcessor, AutoModelForImageClassification
 
 
 class Element(BaseModel):
-    type: str
     url: str
     id: int
 
@@ -40,7 +41,20 @@ except:
     model.save_pretrained(model_directory)
     processor = AutoImageProcessor.from_pretrained(processor_name, do_resize=False)
     processor.save_pretrained(model_directory)
-    
+
+def send_answer(success: bool, message:str, data: list = []):
+    try:
+        with grpc.insecure_channel(f"{os.getenv('GRPC_HOST')}:{os.getenv('GRPC_PORT')}") as channel:
+            stub = task_pb2_grpc.TaskServiceStub(channel)
+            request = task_pb2.CheckPhotoRequest(
+                success=success,
+                message=message,
+                data=data
+            )
+            response = stub.CheckPhoto(request)
+    except grpc.RpcError as e:
+        print(f"Error connecting to gRPC server: {e}")
+        return
 
 def callback(ch, method, properties, body):
     message = Element(**json.loads(body))
@@ -55,40 +69,39 @@ def callback(ch, method, properties, body):
         logits_per_image = outputs.logits 
         logits_per_image = logits_per_image.cpu()
         probs = logits_per_image.softmax(dim=1) 
-        print(bool(probs[0][0] < probs[0][1]))
-
+        send_answer(True, "All photos processed",[task_pb2.CheckPhotoData(id=message.id, value=bool(probs[0][0] < probs[0][1]))])
+        return
     except UnidentifiedImageError:
-        print(f"Error: The URL did not return a valid image format. URL: {message.url}")
+        send_answer(False, f"Error: The URL did not return a valid image format. URL: {message.url}", [])
         return
     except requests.exceptions.HTTPError as http_err:
-        print(f"HTTP error occurred: {http_err} - URL: {message.url}")
+        send_answer(False, f"HTTP error occurred: {http_err} - URL: {message.url}", [])
         return
     except requests.exceptions.ConnectionError as conn_err:
-        print(f"Connection error occurred: {conn_err} - URL: {message.url}")
+        send_answer(False, f"Connection error occurred: {conn_err} - URL: {message.url}", [])
         return
     except requests.exceptions.Timeout as timeout_err:
-        print(f"Timeout error occurred: {timeout_err} - URL: {message.url}")
+        send_answer(False, f"Timeout error occurred: {timeout_err} - URL: {message.url}", [])
         return
     except Exception as ex:
-        print(f"Error processing message: {ex}")
-        return
-     
+        send_answer(False, f"Error processing message: {ex}", [])
+        return   
     
 
 def start_definition_text_consumer():
-    credentials = pika.PlainCredentials('guest', 'guest')
-    connection = pika.BlockingConnection(pika.ConnectionParameters(os.getenv('RABBITMQ_HOST'), os.getenv('RABBITMQ_PORT_CONTAINER')))
+    credentials = pika.PlainCredentials(os.getenv('RABBITMQ_LOGIN'), os.getenv('RABBITMQ_PASSWORD'))
+    connection = pika.BlockingConnection(pika.ConnectionParameters(os.getenv('RABBITMQ_HOST'), os.getenv('RABBITMQ_PORT'), credentials=credentials))
+    queue_name = 'ai_photo'
     channel = connection.channel()
 
-    channel.exchange_declare(exchange='task_exchange', exchange_type='direct')
+    channel.exchange_declare(exchange=queue_name, exchange_type='direct', durable=False)
+    channel.queue_declare(queue=queue_name, passive=True)
 
-    queue_name = 'ai_check_photo_queue'
-    channel.queue_declare(queue=queue_name)
-
-    channel.queue_bind(exchange='task_exchange', queue=queue_name, routing_key='definition_text')
-
-    channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
-
+    channel.basic_consume(
+        queue=queue_name,
+        on_message_callback=callback,
+        auto_ack=False 
+    )
     print("Definition text consumer waiting for messages...")
     channel.start_consuming()
 
