@@ -29,7 +29,8 @@ class Element(BaseModel):
     Text_exsist:bool
     Human_exsist:bool
 
-
+torch.cuda.empty_cache()  # Очистка кэша
+torch.cuda.reset_peak_memory_stats()  # Сброс статистики
 print(torch.cuda.is_available())
 print(f"Is CUDA supported by this system? {torch.cuda.is_available()}")
 print(f"CUDA version: {torch.version.cuda}")
