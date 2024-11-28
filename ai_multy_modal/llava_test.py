@@ -12,13 +12,13 @@ model_directory = f"{model_name.split('/')[1]}"
 
 
 try:
-  model = LlavaNextForConditionalGeneration.from_pretrained(model_directory, torch_dtype="auto", device_map="auto")
-  processor = LlavaNextProcessor.from_pretrained(model_directory)
+    model = LlavaNextForConditionalGeneration.from_pretrained(model_directory, torch_dtype="auto", device_map="auto")
+    processor = LlavaNextProcessor.from_pretrained(model_directory)
 except:
-  model = LlavaNextForConditionalGeneration.from_pretrained(model_directory, torch_dtype="auto", device_map="auto")
-  processor = LlavaNextProcessor.from_pretrained(model_directory)
-  processor.save_pretrained(model_directory)
-  model.save_pretrained(model_directory)
+    model = LlavaNextForConditionalGeneration.from_pretrained(model_name, torch_dtype="auto", device_map="auto")
+    processor = LlavaNextProcessor.from_pretrained(model_name)
+    processor.save_pretrained(model_directory)
+    model.save_pretrained(model_directory)
 
 model.to("cuda:0")
 
