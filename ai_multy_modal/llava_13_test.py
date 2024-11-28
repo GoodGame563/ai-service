@@ -14,11 +14,12 @@ try:
     model = LlavaNextForConditionalGeneration.from_pretrained(model_directory, torch_dtype="auto", device_map="auto").to("cuda:0")
     processor = LlavaNextProcessor.from_pretrained(model_directory)
 except:
-    model = LlavaNextForConditionalGeneration.from_pretrained(model_name, torch_dtype="auto", device_map="auto").to("cuda:0")
+    model = LlavaNextForConditionalGeneration.from_pretrained(model_name, torch_dtype="auto", device_map="auto")
     processor = LlavaNextProcessor.from_pretrained(model_name)
     processor.save_pretrained(model_directory)
     model.save_pretrained(model_directory)
 
+model.to("cuda:0")
 # prepare image and text prompt, using the appropriate prompt template
 url = "https://github.com/haotian-liu/LLaVA/blob/1a91fc274d7c35a9b50b3cb29c4247ae5837ce39/images/llava_v1_5_radar.jpg?raw=true"
 image = Image.open(requests.get(url, stream=True).raw)
