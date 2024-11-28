@@ -43,6 +43,6 @@ prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
 inputs = processor(images=image, text=prompt, return_tensors="pt").to("cuda:0")
 
 # autoregressively complete prompt
-output = model.generate(**inputs, max_new_tokens=800)
+output = model.generate(**inputs, max_new_tokens=100)
 
 print(processor.decode(output[0], skip_special_tokens=True))
