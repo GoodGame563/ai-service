@@ -10,14 +10,14 @@ import requests
 model_name = "llava-hf/llava-v1.6-vicuna-13b-hf"
 
 model_directory = f"{model_name.split('/')[1]}"
-try:
-    model = LlavaNextForConditionalGeneration.from_pretrained(model_directory, torch_dtype="auto", device_map="auto").to("cuda:0")
-    processor = LlavaNextProcessor.from_pretrained(model_directory)
-except:
-    model = LlavaNextForConditionalGeneration.from_pretrained(model_name, torch_dtype="auto", device_map="auto")
-    processor = LlavaNextProcessor.from_pretrained(model_name)
-    processor.save_pretrained(model_directory)
-    model.save_pretrained(model_directory)
+# try:
+#     model = LlavaNextForConditionalGeneration.from_pretrained(model_directory, torch_dtype="auto", device_map="auto").to("cuda:0")
+#     processor = LlavaNextProcessor.from_pretrained(model_directory)
+# except:
+model = LlavaNextForConditionalGeneration.from_pretrained(model_name, torch_dtype="auto", device_map="auto")
+processor = LlavaNextProcessor.from_pretrained(model_name)
+    # processor.save_pretrained(model_directory)
+    # model.save_pretrained(model_directory)
 
 model.to("cuda:0")
 # prepare image and text prompt, using the appropriate prompt template
