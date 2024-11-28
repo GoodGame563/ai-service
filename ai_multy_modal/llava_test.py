@@ -19,7 +19,7 @@ conversation = [
 
       "role": "user",
       "content": [
-          {"type": "text", "text": "What is shown in this image?"},
+          {"type": "text", "text": "Расскажи что ты видешь на картинке в деталях максимально подробно"},
           {"type": "image"},
         ],
     },
