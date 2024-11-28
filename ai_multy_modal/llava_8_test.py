@@ -3,11 +3,8 @@ import torch
 from PIL import Image
 import requests
 
-
-processor = LlavaNextProcessor.from_pretrained("llava-hf/llava-v1.6-vicuna-13b-hf", use_fast=False)
-
-model = LlavaNextForConditionalGeneration.from_pretrained("llava-hf/llava-v1.6-vicuna-13b-hf", torch_dtype=torch.float16, low_cpu_mem_usage=True)
-model.to("cuda:0")
+processor = LlavaNextProcessor.from_pretrained("llava-hf/llama3-llava-next-8b-hf")
+model = LlavaNextForConditionalGeneration.from_pretrained("llava-hf/llama3-llava-next-8b-hf", torch_dtype=torch.float16, device_map="auto") 
 
 # prepare image and text prompt, using the appropriate prompt template
 url = "https://github.com/haotian-liu/LLaVA/blob/1a91fc274d7c35a9b50b3cb29c4247ae5837ce39/images/llava_v1_5_radar.jpg?raw=true"
@@ -27,7 +24,7 @@ conversation = [
 ]
 prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
 
-inputs = processor(images=image, text=prompt, return_tensors="pt").to("cuda:0")
+inputs = processor(images=image, text=prompt, return_tensors="pt").to(model.device)
 
 # autoregressively complete prompt
 output = model.generate(**inputs, max_new_tokens=100)
