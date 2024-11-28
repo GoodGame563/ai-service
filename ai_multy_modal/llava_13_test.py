@@ -2,10 +2,9 @@ from transformers import LlavaNextProcessor, LlavaNextForConditionalGeneration
 import torch
 from PIL import Image
 import requests
-import sentencepiece
 
 
-processor = LlavaNextProcessor.from_pretrained("llava-hf/llava-v1.6-vicuna-13b-hf", trust_remote_code=True, use_fast=False)
+processor = LlavaNextProcessor.from_pretrained("llava-hf/llava-v1.6-vicuna-13b-hf", use_fast=False)
 
 model = LlavaNextForConditionalGeneration.from_pretrained("llava-hf/llava-v1.6-vicuna-13b-hf", torch_dtype=torch.float16, low_cpu_mem_usage=True)
 model.to("cuda:0")
