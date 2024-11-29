@@ -3,7 +3,7 @@ import torch
 from PIL import Image
 import requests
 
-processor = LlavaNextProcessor.from_pretrained("llava-hf/llama3-llava-next-8b-hf")
+processor = LlavaNextProcessor.from_pretrained("llava-hf/llama3-llava-next-8b-hf", patch_size=128)
 model = LlavaNextForConditionalGeneration.from_pretrained("llava-hf/llama3-llava-next-8b-hf", torch_dtype=torch.float16, device_map="auto") 
 
 # prepare image and text prompt, using the appropriate prompt template
