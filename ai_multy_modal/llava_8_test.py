@@ -7,8 +7,8 @@ processor = LlavaNextProcessor.from_pretrained("llava-hf/llama3-llava-next-8b-hf
 model = LlavaNextForConditionalGeneration.from_pretrained("llava-hf/llama3-llava-next-8b-hf", torch_dtype=torch.float16, device_map="auto") 
 
 # prepare image and text prompt, using the appropriate prompt template
-url = "https://github.com/haotian-liu/LLaVA/blob/1a91fc274d7c35a9b50b3cb29c4247ae5837ce39/images/llava_v1_5_radar.jpg?raw=true"
-image = Image.open(requests.get(url, stream=True).raw)
+url = "image/2.webp"
+image = Image.open(url)
 
 # Define a chat histiry and use `apply_chat_template` to get correctly formatted prompt
 # Each value in "content" has to be a list of dicts with types ("text", "image") 
