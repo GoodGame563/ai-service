@@ -3,7 +3,7 @@ import torch
 from PIL import Image
 import requests
 
-processor = LlavaNextProcessor.from_pretrained("llava-hf/llama3-llava-next-8b-hf", patch_size=128)
+processor = LlavaNextProcessor.from_pretrained("llava-hf/llama3-llava-next-8b-hf")
 model = LlavaNextForConditionalGeneration.from_pretrained("llava-hf/llama3-llava-next-8b-hf", torch_dtype=torch.float16, device_map="auto") 
 
 # prepare image and text prompt, using the appropriate prompt template
@@ -17,7 +17,7 @@ conversation = [
 
       "role": "user",
       "content": [
-          {"type": "text", "text": "Отвечаешь ты исключительно на русском. Опиши весь текст который ты видишь."},
+          {"type": "text", "text": "Отвечаешь ты исключительно на русском. Опиши весь текст который ты видишь. Ответив только на русском."},
           {"type": "image"},
         ],
     },
