@@ -32,7 +32,7 @@ image = Image.open(url)
 prompt = "Explain the importance of renewable energy in modern society."
 
 # inputs = processor(images=image, text=prompt, return_tensors="pt").to(model.device)
-inputs = processor(text=prompt, return_tensors="pt").to(model.device)
+inputs = processor(text=prompt,images=None, return_tensors="pt").to(model.device)
 
 # autoregressively complete prompt
 output = model.generate(**inputs, max_new_tokens=800)
