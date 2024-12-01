@@ -28,7 +28,7 @@ device = torch.device("cuda")
 model = model.to(device)
 
 def text_write_rigth(text:str) -> bool:
-    prompt = f"В данном тексте есть грамматические ошибки {text}"
+    prompt = f"В данном тексте допущены ли грамматические ошибки {text}"
     messages = [
         {"role": "system", "content": "Ты модель которая отвечает True or False."},
         {"role": "user", "content": prompt}
