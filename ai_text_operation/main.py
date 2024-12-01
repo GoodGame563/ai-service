@@ -47,7 +47,9 @@ def text_write_rigth(text:str) -> bool:
     generated_ids = [
         output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
     ]
-    return str(tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]) == "True"
+    final = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+    print (final)
+    return str(final) == "True"
 
 
 text = """Базовая футболка с усиленным воротом для мужчин – сочетание стиля и комфорта на каждый день. Глубокий черный цвет подчеркивает мужественность и добавляет образу харизмы, а V-образный вырез выгодно выделяет футболку среди других. Комфортная посадка дарит уют и свободу движений в любой ситуации.
