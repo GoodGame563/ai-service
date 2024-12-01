@@ -30,7 +30,8 @@ conversation = [
 ]
 prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
 
-inputs = processor(images=image, text=prompt, return_tensors="pt").to(model.device)
+# inputs = processor(images=image, text=prompt, return_tensors="pt").to(model.device)
+inputs = processor(text=prompt, return_tensors="pt").to(model.device)
 
 # autoregressively complete prompt
 output = model.generate(**inputs, max_new_tokens=800)
