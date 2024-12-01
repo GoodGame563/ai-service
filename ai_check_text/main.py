@@ -6,4 +6,4 @@ input = tokenizer("I was here yesterday to studying",text_target="I was here yes
 
 output = model.generate(input["input_ids"],attention_mask=input["attention_mask"],forced_bos_token_id=tokenizer.lang_code_to_id["ru_RU"])
 
-print(output)
+print(output[0])
