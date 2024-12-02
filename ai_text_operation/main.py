@@ -60,7 +60,31 @@ def text_write_rigth(text:str) -> bool:
     return str(final) == "True"
 
 def generate_new_text(text: str, seo_words: list[SEO_word]):
-    pass
+    if len(seo_words) == 0:
+        max_tokens = len(text.split())+100
+        prompt = f"{text}"
+        messages = [
+            {"role": "system", "content": """Вы — эксперт в области языка и грамматики. Ваша задача — переписать предоставленный текст, устраняя все грамматические, орфографические и пунктуационные ошибки. Сохраняйте стиль, общий смысл и структуру текста. Если есть двусмысленности, выберите наиболее логичный вариант. Нужно пистаь только исправленный вариант"""},
+            {"role": "user", "content": prompt}
+        ]
+        text = tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True
+        )
+        model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
+
+        generated_ids = model.generate(
+            **model_inputs,
+            max_new_tokens=max_tokens, 
+            num_beams=5
+        )
+        generated_ids = [
+            output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
+        ]
+        final = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+        print (final)
+    
 
 text = """Базовая футболка с усиленным воротом для мужчин – сочетание стиля и комфорта на каждый день. Глубокий черный цвет подчеркивает мужественность и добавляет образу харизмы, а V-образный вырез выгодно выделяет футболку среди других. Комфортная посадка дарит уют и свободу движений в любой ситуации.
 
@@ -70,11 +94,12 @@ text = """Базовая футболка с усиленным воротом �
 
 Рост модели 172 см, его параметры: объем груди 113 см, объем талии 82 см, объем бедер 100 см. На нем футболка размера 50."""
 
-print(len(text.split()))
-t, f = (0, 0)
-for _ in range(50):
-    if text_write_rigth(text): t += 1
-    else: f += 1
+# print(len(text.split()))
+# t, f = (0, 0)
+# for _ in range(50):
+#     if text_write_rigth(text): t += 1
+#     else: f += 1
 
-print(f"True: {t}, False: {f}")
+# print(f"True: {t}, False: {f}")
 
+generate_new_text(text)
