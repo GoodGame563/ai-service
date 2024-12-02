@@ -49,7 +49,9 @@ def text_write_rigth(text:str) -> bool:
 
     generated_ids = model.generate(
         **model_inputs,
-        max_new_tokens=6, temperature=0.1
+        max_new_tokens=6, 
+        temperature=0.1, 
+        early_stopping=True
     )
     generated_ids = [
         output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
