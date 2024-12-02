@@ -1,7 +1,12 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torchvision.models as models
 import torch
+from pydantic import BaseModel
 
+
+class SEO_word(BaseModel):
+    word: str
+    need_for: int
 # Путь к локальной модели
 model_directory = "./qwen_model"
 try:
@@ -26,6 +31,8 @@ print(f"CUDA version: {torch.version.cuda}")
 
 device = torch.device("cuda")
 model = model.to(device)
+
+
 
 def text_write_rigth(text:str) -> bool:
     prompt = f"В данном тексте есть грамматические ошибки {text}"
@@ -52,6 +59,8 @@ def text_write_rigth(text:str) -> bool:
         print (final)
     return str(final) == "True"
 
+def generate_new_text(text: str, seo_words: list[SEO_word]):
+    pass
 
 text = """Базовая футболка с усиленным воротом для мужчин – сочетание стиля и комфорта на каждый день. Глубокий черный цвет подчеркивает мужественность и добавляет образу харизмы, а V-образный вырез выгодно выделяет футболку среди других. Комфортная посадка дарит уют и свободу движений в любой ситуации.
 
@@ -61,7 +70,7 @@ text = """Базовая футболка с усиленным воротом �
 
 Рост модели 172 см, его параметры: объем груди 113 см, объем талии 82 см, объем бедер 100 см. На нем футболка размера 50."""
 
-print(len(text))
+print(len(text.split()))
 t, f = (0, 0)
 for _ in range(50):
     if text_write_rigth(text): t += 1
