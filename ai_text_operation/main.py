@@ -61,7 +61,6 @@ def text_write_rigth(text:str) -> bool:
 
 def generate_new_text(text: str, seo_words: list[SEO_word]):
     if len(seo_words) == 0:
-        max_tokens = len(text.split())+100
         prompt = f"{text}"
         messages = [
             {"role": "system", "content": """Вы — эксперт в области языка и грамматики. Ваша задача — переписать предоставленный текст, устраняя все грамматические, орфографические и пунктуационные ошибки. Сохраняйте стиль, общий смысл и структуру текста. Если есть двусмысленности, выберите наиболее логичный вариант. Нужно пистаь только исправленный вариант"""},
@@ -76,7 +75,7 @@ def generate_new_text(text: str, seo_words: list[SEO_word]):
 
         generated_ids = model.generate(
             **model_inputs,
-            max_new_tokens=max_tokens, 
+            max_new_tokens=512, 
             num_beams=5
         )
         generated_ids = [
