@@ -77,8 +77,7 @@ def generate_new_text(text: str, seo_words: list[SEO_word]):
         generated_ids = model.generate(
             **model_inputs,
             max_new_tokens=512,
-            temperature=1.5, 
-            top_p=0.9, 
+            temperature=1.2, 
             top_k=40
         )
         generated_ids = [
