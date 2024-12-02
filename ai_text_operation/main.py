@@ -102,4 +102,4 @@ text = """Базовая футболка с усиленным воротом �
 
 # print(f"True: {t}, False: {f}")
 
-generate_new_text(text)
+generate_new_text(text, [])
