@@ -48,7 +48,7 @@ def text_write_rigth(text:str) -> bool:
         output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
     ]
     final = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
-    if (len(final) > 2):
+    if (len(str(final).split(" ")) > 1):
         print (final)
     return str(final) == "True"
 
