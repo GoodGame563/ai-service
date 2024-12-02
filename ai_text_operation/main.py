@@ -82,7 +82,7 @@ def generate_new_text(text: str, seo_words: list[SEO_word]):
         generated_ids = [
             output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
         ]
-        final = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+        final = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)
         print (final)
     
 
