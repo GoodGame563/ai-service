@@ -128,7 +128,7 @@ def generate_new_text_with_seo_words(main_element:description_words, elements:li
 
     generated_ids = model.generate(
         **model_inputs,
-        max_new_tokens=1024
+        max_new_tokens=2048
     )
     generated_ids = [
         output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
