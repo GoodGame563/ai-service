@@ -60,7 +60,7 @@ def text_write_rigth(text:str) -> bool:
         print (final)
     return str(final) == "True"
 
-def generate_new_text_without_seo_words(text: str):
+def generate_new_text_without_seo_words(text: str, name:str, name_brand:str):
     prompt = f"{text}"
     messages = [
         {"role": "system", "content": """
@@ -72,8 +72,8 @@ def generate_new_text_without_seo_words(text: str):
             Пример:
                 Оригинал: 'Уникальный крем для лица на натуральной основе, который увлажняет кожу и делает её гладкой.'
                 Переформулированное: 'Натуральный крем для лица, который обеспечивает интенсивное увлажнение, придавая коже гладкость и сияние.'
-            Вот текст для переформулирования:"""},
-        {"role": "user", "content": prompt}
+            Вот информация для переформулирования:"""},
+        {"role": "user", "content": f"Название продукта - {name}\nНазвание бренда - {name_brand}\nИсходный текст - {prompt}"}
     ]
     text = tokenizer.apply_chat_template(
         messages,
