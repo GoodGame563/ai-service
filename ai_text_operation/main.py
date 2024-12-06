@@ -84,12 +84,13 @@ def generate_new_text_without_seo_words(text: str):
 
     generated_ids = model.generate(
         **model_inputs,
-        max_new_tokens=1024,
+        max_new_tokens=1024, 
+        num_beams=5
     )
     generated_ids = [
         output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
     ]
-    final = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+    final = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)
     print (final)
     
 
