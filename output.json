@@ -1,0 +1,16 @@
+[{
+    "result": "success",
+    "message": "",
+    "data" : 
+        {
+            "type": "boolean", 
+            "value": true,
+            "type-ai": "definition_text",
+            "image": "https://basket-12.wbbasket.ru/vol1809/part180945/180945782/images/big/2.webp"
+        }
+},
+{
+    "result": "failure",
+    "message": "PIL is not available",
+    "data" : null
+}]

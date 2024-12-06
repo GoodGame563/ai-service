@@ -1,5 +1,5 @@
 *venv
-*.json
+*-ai
 *.safetensors
 test_*
 .env
