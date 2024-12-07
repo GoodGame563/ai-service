@@ -126,7 +126,7 @@ def generate_new_text_with_seo_words_v1(main_element:description_words, elements
     generated_ids = model.generate(
         **model_inputs,
         temperature=0.8,
-        repetition_penalty = 1.2,
+        repetition_penalty = 0.9,
         max_new_tokens=2048
     )
     generated_ids = [
@@ -172,6 +172,7 @@ def generate_new_text_with_seo_words_v2(main_element:description_words, elements
         repetition_penalty = 1.2,
         length_penalty =0.8,
         num_beams = 3,
+        early_stopping = True,
         max_new_tokens=2048
     )
     generated_ids = [
