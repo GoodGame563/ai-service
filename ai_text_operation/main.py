@@ -127,6 +127,49 @@ def generate_new_text_with_seo_words_v1(main_element:description_words, elements
         **model_inputs,
         temperature=0.8,
         repetition_penalty = 1.2,
+        max_new_tokens=2048
+    )
+    generated_ids = [
+        output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
+    ]
+    final = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+    return final
+
+
+def generate_new_text_with_seo_words_v2(main_element:description_words, elements:list[description_words]) -> str:
+    prompt = f"Прочитай описание нашего товара и список ключевых слов:\nНаше описание: {main_element.description}\nНаши ключевые слова: {main_element.words}\nПрочитай описание и ключевые слова конкурентов (без упоминания их брендов):"
+    for element in  elements:
+        prompt += f"\nОписание конкурента: {element.description}\nКлючевые слова конкурента: {element.words}"
+    
+    messages = [
+        {"role": "system", "content": """
+    Ты — эксперт по созданию описаний товаров для маркетплейсов. Твоя задача — сравнить описание и ключевые слова нашего товара с описаниями и ключевыми словами конкурентов и улучшить его.
+
+    Выдели и запомни ключевые слова и фразы из описаний конкурентов, которых нет в нашем описании, но которые могут сделать наше предложение более привлекательным.
+
+    Перепиши описание нашего товара так, чтобы оно:
+    Соответствовало формату карточки товара на маркетплейсе.
+    Включало недостающие ключевые слова и фразы, сохраняя уникальность текста.
+    Подчеркивало основные преимущества и уникальные характеристики товара.
+    Привлекало внимание и мотивировало к покупке, избегая сложных терминов и профессионального жаргона.
+    Используй следующий стиль ответа:
+    'Ваше описание товара уже достаточно привлекательное и информативное, однако есть несколько моментов, которые можно улучшить:
+        {здесь перечисли моменты которые можно улучшить в тексте}
+    Описание товара:
+        {Пишешь новое описание товара}'          """},
+        {"role": "user", "content": prompt}
+    ]
+    text = tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=True
+    )
+    model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
+
+    generated_ids = model.generate(
+        **model_inputs,
+        temperature=0.8,
+        repetition_penalty = 1.2,
         length_penalty =0.8,
         num_beams = 3,
         max_new_tokens=2048
