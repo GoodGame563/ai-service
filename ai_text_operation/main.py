@@ -99,6 +99,7 @@ def generate_new_text_with_seo_words(main_element:description_words, elements:li
             [Наши ключевые слова: {main_element.words}]
 
             Прочитай описание и ключевые слова конкурентов (без упоминания их брендов):"""
+    print(prompt)
     for element in  elements:
         prompt += f"\n[Описание конкурента: {element.description}]\n[Ключевые слова конкурента: {element.words}]"
     
