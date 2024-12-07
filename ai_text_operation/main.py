@@ -202,5 +202,5 @@ with open("response.json", "r", encoding='utf-8') as write_file:
     for element in t:
         elements.append(description_words(description=element["description"], words=[e["raw_keyword"] for e in element["seo"]]))
 
-print(generate_new_text_with_seo_words_v1(main_element, elements))
+print(generate_new_text_with_seo_words_v2(main_element, elements))
 
