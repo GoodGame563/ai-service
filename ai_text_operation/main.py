@@ -93,7 +93,7 @@ def generate_new_text_without_seo_words(text: str)->str:
     final = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
     return final
 
-def generate_new_text_with_seo_words(main_element:description_words, elements:list[description_words]) -> str:
+def generate_new_text_with_seo_words_v1(main_element:description_words, elements:list[description_words]) -> str:
     prompt = f"Прочитай описание нашего товара и список ключевых слов:\nНаше описание: {main_element.description}\nНаши ключевые слова: {main_element.words}\nПрочитай описание и ключевые слова конкурентов (без упоминания их брендов):"
     for element in  elements:
         prompt += f"\nОписание конкурента: {element.description}\nКлючевые слова конкурента: {element.words}"
@@ -126,6 +126,8 @@ def generate_new_text_with_seo_words(main_element:description_words, elements:li
     generated_ids = model.generate(
         **model_inputs,
         temperature=0.8,
+        repetition_penalty = 1.2,
+        length_penalty =0.8,
         max_new_tokens=2048
     )
     generated_ids = [
@@ -157,5 +159,5 @@ with open("response.json", "r", encoding='utf-8') as write_file:
     for element in t:
         elements.append(description_words(description=element["description"], words=[e["raw_keyword"] for e in element["seo"]]))
 
-print(generate_new_text_with_seo_words(main_element, elements))
+print(generate_new_text_with_seo_words_v1(main_element, elements))
 
