@@ -94,12 +94,7 @@ def generate_new_text_without_seo_words(text: str)->str:
     return final
 
 def generate_new_text_with_seo_words(main_element:description_words, elements:list[description_words]) -> str:
-    prompt = f"""Прочитай описание нашего товара и список ключевых слов:
-            Наше описание: {main_element.description}
-            Наши ключевые слова: {main_element.words}
-
-            Прочитай описание и ключевые слова конкурентов (без упоминания их брендов):"""
-    print(prompt)
+    prompt = f"Прочитай описание нашего товара и список ключевых слов:\nНаше описание: {main_element.description}\nНаши ключевые слова: {main_element.words}\nПрочитай описание и ключевые слова конкурентов (без упоминания их брендов):"
     for element in  elements:
         prompt += f"\nОписание конкурента: {element.description}\nКлючевые слова конкурента: {element.words}"
     
