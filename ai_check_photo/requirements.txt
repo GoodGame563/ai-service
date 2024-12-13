@@ -3,3 +3,4 @@ pydantic==2.9.2
 pillow==10.2.0
 requests==2.32.3
 transformers==4.45.2
+python-dotenv==1.0.1
