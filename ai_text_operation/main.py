@@ -247,35 +247,6 @@ def generate_by_reviews(reviews:list[str]) -> str:
     final = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
     return final
 
-# text = "Профессиональный спрей кондиционер для волос ULAB станет незаменимым помощником в ежедневном уходе за волосами. Этот продукт обеспечивает надежную термозащиту, разглаживание, увлажнение и восстановление. \n\nСпрей для волос обеспечивает защиту при укладке, благодаря чему волосы остаются гладкими и мягкими. Термозащитный эффект спрея предотвращает повреждение волос, сохраняя их силу и блеск. Этот спрей также защищает волосы от УФ-лучей.\n\nСредство солнцезащитное способствует легкому расчесыванию и укладке, благодаря чему волосы становятся более послушными. Спрей придает объем у корней для прикорневого объема, делая волосы густыми. Если ваши волосы склонны к пушистости или секущимся кончикам, этот спрей поможет разгладить их и придать волосам ухоженный вид. Эффект ламинирования, который дает спрей, делает волосы шелковистыми и блестящими.\n\nПарфюмированный спрей идеально подходит для использования на поврежденных, тонких и вьющихся волосах, обеспечивая им дополнительное питание и увлажнение, и защиту от солнца. Кератин в составе спрея способствует восстановлению структуры волос.\n\nЭтот кератиновый разглаживающий спрей для волос подходит для ухода за кожей головы, предотвращая сухость и шелушение. Он обеспечивает комплексный уход, питая волосы от корней до кончиков. \n\nЖенский спрей станет отличным выбором для тех, кто стремится к салонному уходу, к гладкости и блеску волос. Станет прекрасным подарком для женщин и девушек.\n\nСухие, поврежденные, пушистые или тонкие - многофункциональный спрей юлаб 10 в 1 обеспечит уход и восстановление. \n\nПрофессиональный несмываемый термоспрей для волос, особенно для окрашенных, обеспечивает защиту и эластичность, предотвращая электризацию и антистатик. Он идеален после утюжка и фена, сохраняя эффект кератинового выпрямления. Этот бьюти продукт незаменим для здорового и красивого вида волос."
-# generate_new_text_without_seo_words(text)
-# print(len(text.split()))
-# t, f = (0, 0)
-# for _ in range(50):
-#     if text_write_rigth(text): t += 1
-#     else: f += 1
-
-# print(f"True: {t}, False: {f}")
-
-# main_element = description_words(description="",words=[])
-# elements = []
-# with open("response.json", "r", encoding='utf-8') as write_file:
-#     t = list(json.load(write_file))
-#     words = []
-    
-#     first_element = t.pop()
-#     main_element.description = first_element["description"]
-#     main_element.words = [e["raw_keyword"] for e in first_element["seo"]]
-#     for element in t:
-#         elements.append(description_words(description=element["description"], words=[e["raw_keyword"] for e in element["seo"]]))
-# print(generate_new_text_with_seo_words_v2(main_element, elements))
-
-# with open("response.json", "r", encoding='utf-8') as write_file:
-#     t = list(json.load(write_file))
-#     first_element = t.pop()
-#     reviews = first_element['reviews']
-#     print(generate_by_reviews(reviews))
-
 def send_answer_to_description(success: bool, message:str, data: task_pb2.CheckDescriptionData):
     try:
         with grpc.insecure_channel(f"{os.getenv('GRPC_HOST')}:{os.getenv('GRPC_PORT')}") as channel:
@@ -308,7 +279,8 @@ def send_answer_to_reviews(success: bool, message:str, data: task_pb2.CheckRevie
 
 def callback(ch, method, properties, body):
     raw_type_message = json.loads(body)
-    print("callback")
+    print(raw_type_message['type'])
+    print(str(raw_type_message['type']) == 'seo_v1' or str(raw_type_message['type']) == 'seo_v2')
 
     if str(raw_type_message['type']) == 'reviews':
         try:
@@ -328,7 +300,7 @@ def callback(ch, method, properties, body):
             ch.basic_ack(delivery_tag=method.delivery_tag)
             return
         
-    elif str(raw_type_message['type']) == 'seo_v1' and str(raw_type_message['type']) == 'seo_v2':
+    elif str(raw_type_message['type']) == 'seo_v1' or str(raw_type_message['type']) == 'seo_v2':
         try:
             message = SeoMessage(**json.loads(body))
             result = ""
