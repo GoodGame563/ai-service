@@ -325,6 +325,7 @@ def callback(ch, method, properties, body):
                 ))
             print("Error")
         finally:
+            ch.basic_ack(delivery_tag=method.delivery_tag)
             return
         
     elif str(raw_type_message['type']) == 'seo_v1' and str(raw_type_message['type']) == 'seo_v2':
@@ -347,6 +348,7 @@ def callback(ch, method, properties, body):
                 ))
             print("Error")
         finally:
+            ch.basic_ack(delivery_tag=method.delivery_tag)
             return   
     print("Done")
 
