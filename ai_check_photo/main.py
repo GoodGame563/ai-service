@@ -12,12 +12,15 @@ import grpc
 import task_pb2
 import task_pb2_grpc
 import torch
+import sys
 
 load_dotenv()
 class Element(BaseModel):
     url: str
     id: int
 
+sys.path.append(os.path.join(os.getcwd(), '..'))
+os.system('python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. task.proto')
 
 
 print(torch.cuda.is_available())
