@@ -73,23 +73,20 @@ def callback(ch, method, properties, body):
         logits_per_image = outputs.logits 
         logits_per_image = logits_per_image.cpu()
         probs = logits_per_image.softmax(dim=1) 
-        send_answer(True, "All photos processed",[task_pb2.CheckPhotoData(id=message.id, value=bool(probs[0][0] < probs[0][1]))])
-        return
+        send_answer(True, "All photos processed",[task_pb2.CheckPhotoData(id=message.id, value=bool(probs[0][0] < probs[0][1]))]) 
     except UnidentifiedImageError:
         send_answer(False, f"Error: The URL did not return a valid image format. URL: {message.url}", [])
-        return
     except requests.exceptions.HTTPError as http_err:
         send_answer(False, f"HTTP error occurred: {http_err} - URL: {message.url}", [])
-        return
     except requests.exceptions.ConnectionError as conn_err:
         send_answer(False, f"Connection error occurred: {conn_err} - URL: {message.url}", [])
-        return
     except requests.exceptions.Timeout as timeout_err:
         send_answer(False, f"Timeout error occurred: {timeout_err} - URL: {message.url}", [])
-        return
     except Exception as ex:
         send_answer(False, f"Error processing message: {ex}", [])
-        return   
+    finally:
+        ch.basic_ack(delivery_tag=method.delivery_tag)
+        return
     
 
 def start_definition_text_consumer():
