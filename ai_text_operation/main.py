@@ -285,7 +285,7 @@ def send_answer_to_description(success: bool, message:str, data: task_pb2.CheckD
                 message=message,
                 data=data
             )
-            print(stub.UpdateDescription(request))
+            stub.UpdateDescription(request)
     except grpc.RpcError as e:
         print(f"Error connecting to gRPC server: {e}")
         return
@@ -299,7 +299,7 @@ def send_answer_to_reviews(success: bool, message:str, data: task_pb2.CheckRevie
                 message=message,
                 data=data
             )
-            print(stub.UpdateReviewsAnalyze(request))
+            stub.UpdateReviewsAnalyze(request)
     except grpc.RpcError as e:
         print(f"Error connecting to gRPC server: {e}")
         return
@@ -308,8 +308,6 @@ def send_answer_to_reviews(success: bool, message:str, data: task_pb2.CheckRevie
 
 def callback(ch, method, properties, body):
     raw_type_message = json.loads(body)
-    print("Callback")
-    print(f"Received message: {raw_type_message['type']}")
 
     if str(raw_type_message['type']) == 'reviews':
         try:
@@ -324,6 +322,7 @@ def callback(ch, method, properties, body):
                 id=message.id,
                 value=""
                 ))
+            print("Error")
         finally:
             return
         
@@ -345,9 +344,10 @@ def callback(ch, method, properties, body):
                 id=message.id,
                 value=""
                 ))
+            print("Error")
         finally:
             return   
-    
+    print("Done")
 
 
 def start_seo_consumer():
