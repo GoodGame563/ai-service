@@ -219,8 +219,6 @@ def generate_by_reviews(reviews:list[str]) -> str:
     for review in reviews:
         reviews_str += f"{review}, "
     prompt = f"Отзывы {reviews_str}"
-   
-    
     messages = [
         {"role": "system", "content": """Ты проффесиональный анализатор отзывов о товаре на маркетплейсе
          Проанализируй отзывы покупателей на товары конкурентов. Определи 10 наиболее часто упоминаемых преимуществ и основываясь на отзывах товара. Опиши 10 ключевых характеристик и 10 преимуществ, которые делают их популярными среди пользователей. 
@@ -279,8 +277,6 @@ def send_answer_to_reviews(success: bool, message:str, data: task_pb2.CheckRevie
 
 def callback(ch, method, properties, body):
     raw_type_message = json.loads(body)
-    print(raw_type_message['type'])
-    print(str(raw_type_message['type']) == 'seo_v1' or str(raw_type_message['type']) == 'seo_v2')
 
     if str(raw_type_message['type']) == 'reviews':
         try:
