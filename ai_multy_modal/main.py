@@ -27,3 +27,4 @@ inputs = processor(images=image, text=prompt, return_tensors="pt").to(model.devi
 output = model.generate(**inputs, max_new_tokens=200)
 
 print(processor.decode(output[0], skip_special_tokens=True))
+input()
