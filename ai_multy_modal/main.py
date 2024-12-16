@@ -71,3 +71,5 @@ def analyze_photo_by_text(url):
   output = model.generate(**inputs, max_new_tokens=800,  temperature=0.7, do_sample=True).cpu()
 
   print(processor.decode(output[0], skip_special_tokens=True))
+
+analyze_photo_by_text(url)
