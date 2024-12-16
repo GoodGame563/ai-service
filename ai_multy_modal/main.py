@@ -3,9 +3,27 @@ import torch
 from PIL import Image
 import requests
 
-processor = LlavaNextProcessor.from_pretrained("llava-hf/llama3-llava-next-8b-hf")
-model = LlavaNextForConditionalGeneration.from_pretrained("llava-hf/llama3-llava-next-8b-hf", torch_dtype=torch.float16, device_map="auto")
 
+print(torch.cuda.is_available())
+print(f"Is CUDA supported by this system? {torch.cuda.is_available()}")
+print(f"CUDA version: {torch.version.cuda}")
+
+if torch.cuda.is_available():
+    device = torch.device("cuda")
+else:
+    device = torch.device("cpu")
+
+model_name = "llava-hf/llama3-llava-next-8b-hf"
+model_directory = f"{model_name.split('/')[1]}-ai"
+
+try:
+    model = LlavaNextProcessor.from_pretrained(model_directory, torch_dtype=torch.float16, device_map="auto")
+    processor = LlavaNextProcessor.from_pretrained(model_directory, do_resize=False)
+except:
+    model = LlavaNextProcessor.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
+    model.save_pretrained(model_directory)
+    processor = LlavaNextProcessor.from_pretrained(model_name, do_resize=False)
+    processor.save_pretrained(model_directory)
 # prepare image and text prompt, using the appropriate prompt template
 url = "image/5.webp"
 image = Image.open(url)
