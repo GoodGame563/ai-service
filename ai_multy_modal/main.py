@@ -54,6 +54,7 @@ def analyze_photo(url):
   print(processor.decode(output[0], skip_special_tokens=True))
 
 def analyze_photo_by_text(url):
+  result = []
   image = Image.open(url)
   conversation = [
       {
@@ -70,6 +71,39 @@ def analyze_photo_by_text(url):
 
   output = model.generate(**inputs, max_new_tokens=800,  temperature=0.7, do_sample=True).cpu()
 
-  print(processor.decode(output[0], skip_special_tokens=True))
+  result.append(processor.decode(output[0], skip_special_tokens=True))
+  conversation = [
+      {
+        "role": "user",
+        "content": [
+            {"type": "text", "text": "Определи, подходит ли стиль шрифта данному изображению. Уместен ли он для карточки товара? Отнеси стиль шрифта к категории (например, строгий, декоративный, минималистичный)."},
+            {"type": "image"},
+          ],
+      },
+  ]
+  prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
+
+  inputs = processor(images=image, text=prompt, return_tensors="pt").to(model.device)
+
+  output = model.generate(**inputs, max_new_tokens=800,  temperature=0.7, do_sample=True).cpu()
+
+  result.append(processor.decode(output[0], skip_special_tokens=True))
+  conversation = [
+      {
+        "role": "user",
+        "content": [
+            {"type": "text", "text": "Выяви недостатки шрифтов: искаженный текст, слишком мелкий размер, неправильные межбуквенные интервалы или выравнивание."},
+            {"type": "image"},
+          ],
+      },
+  ]
+  prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
+
+  inputs = processor(images=image, text=prompt, return_tensors="pt").to(model.device)
+
+  output = model.generate(**inputs, max_new_tokens=800,  temperature=0.7, do_sample=True).cpu()
+
+  result.append(processor.decode(output[0], skip_special_tokens=True))
+  print(result)
 
 analyze_photo_by_text(url)
