@@ -71,7 +71,7 @@ def analyze_photo_by_text(url):
 
   output = model.generate(**inputs, max_new_tokens=800,  temperature=0.7, do_sample=True).cpu()
 
-  result.append(str(processor.decode(output[0], skip_special_tokens=True)).split(".assistant"))
+  result.append(str(processor.decode(output[0], skip_special_tokens=True)).split(".assistant")[1])
   conversation = [
       {
         "role": "user",
@@ -87,7 +87,7 @@ def analyze_photo_by_text(url):
 
   output = model.generate(**inputs, max_new_tokens=800,  temperature=0.7, do_sample=True).cpu()
 
-  result.append(str(processor.decode(output[0], skip_special_tokens=True)).split(".assistant"))
+  result.append(str(processor.decode(output[0], skip_special_tokens=True)).split(".assistant")[1])
   print(result)
 
 analyze_photo_by_text(url)
