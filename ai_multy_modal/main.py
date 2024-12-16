@@ -28,7 +28,7 @@ model_directory = f"{model_name.split('/')[1]}-ai"
 #     processor = LlavaNextProcessor.from_pretrained(model_name, do_resize=False)
 #     processor.save_pretrained(model_directory)
 
-model = LlavaNextForConditionalGeneration.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto", use_flash_attention_2=True)
+model = LlavaNextForConditionalGeneration.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
 processor = LlavaNextProcessor.from_pretrained(model_name, do_resize=False)
 url = "image/5.webp"
 
