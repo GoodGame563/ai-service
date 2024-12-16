@@ -47,7 +47,7 @@ prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
 
 inputs = processor(images=image, text=prompt, return_tensors="pt").to(model.device)
 
-output = model.generate(**inputs, max_new_tokens=200,  temperature=0.7, do_sample=True).cpu()
+output = model.generate(**inputs, max_new_tokens=800,  temperature=0.7, do_sample=True).cpu()
 
 print(processor.decode(output[0], skip_special_tokens=True))
 input()
