@@ -31,23 +31,43 @@ model_directory = f"{model_name.split('/')[1]}-ai"
 model = LlavaNextForConditionalGeneration.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
 processor = LlavaNextProcessor.from_pretrained(model_name, do_resize=False)
 url = "image/5.webp"
-image = Image.open(url)
+
 
 model = torch.compile(model)
-conversation = [
-    {
-      "role": "user",
-      "content": [
-          {"type": "text", "text": "Проанализируй текст на карточке товара и предложи конкретные советы по улучшению его читаемости. Например, предложи увеличить размер шрифта, изменить цвет шрифта или настроить интервал между строками. Убедись, что рекомендации включают точные значения (например, 'Увеличить размер шрифта до 16px' или 'Изменить цвет на #FFFFFF')."},
-          {"type": "image"},
-        ],
-    },
-]
-prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
+def analyze_photo(url):
+  image = Image.open(url)
+  conversation = [
+      {
+        "role": "user",
+        "content": [
+            {"type": "text", "text": "Проанализируй текст на карточке товара и предложи конкретные советы по улучшению его читаемости. Например, предложи увеличить размер шрифта, изменить цвет шрифта или настроить интервал между строками. Убедись, что рекомендации включают точные значения (например, 'Увеличить размер шрифта до 16px' или 'Изменить цвет на #FFFFFF')."},
+            {"type": "image"},
+          ],
+      },
+  ]
+  prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
 
-inputs = processor(images=image, text=prompt, return_tensors="pt").to(model.device)
+  inputs = processor(images=image, text=prompt, return_tensors="pt").to(model.device)
 
-output = model.generate(**inputs, max_new_tokens=800,  temperature=0.7, do_sample=True).cpu()
+  output = model.generate(**inputs, max_new_tokens=800,  temperature=0.7, do_sample=True).cpu()
 
-print(processor.decode(output[0], skip_special_tokens=True))
-input()
+  print(processor.decode(output[0], skip_special_tokens=True))
+
+def analyze_photo_by_text(url):
+  image = Image.open(url)
+  conversation = [
+      {
+        "role": "user",
+        "content": [
+            {"type": "text", "text": "Оцени текст на изображении: насколько легко его прочитать? Укажи, виден ли текст четко, не сливается ли он с фоном."},
+            {"type": "image"},
+          ],
+      },
+  ]
+  prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
+
+  inputs = processor(images=image, text=prompt, return_tensors="pt").to(model.device)
+
+  output = model.generate(**inputs, max_new_tokens=800,  temperature=0.7, do_sample=True).cpu()
+
+  print(processor.decode(output[0], skip_special_tokens=True))
