@@ -28,7 +28,7 @@ model_directory = f"{model_name.split('/')[1]}-ai"
 #     processor = LlavaNextProcessor.from_pretrained(model_name, do_resize=False)
 #     processor.save_pretrained(model_directory)
 
-model = LlavaNextForConditionalGeneration.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
+model = LlavaNextForConditionalGeneration.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto", use_flash_attention_2=True)
 processor = LlavaNextProcessor.from_pretrained(model_name, do_resize=False)
 url = "image/5.webp"
 
@@ -71,7 +71,7 @@ def analyze_photo_by_text(url):
 
   output = model.generate(**inputs, max_new_tokens=800,  temperature=0.7, do_sample=True).cpu()
 
-  result.append(processor.decode(output[0], skip_special_tokens=True))
+  result.append(str(processor.decode(output[0], skip_special_tokens=True)).split(".assistant"))
   conversation = [
       {
         "role": "user",
@@ -87,23 +87,7 @@ def analyze_photo_by_text(url):
 
   output = model.generate(**inputs, max_new_tokens=800,  temperature=0.7, do_sample=True).cpu()
 
-  result.append(processor.decode(output[0], skip_special_tokens=True))
-  conversation = [
-      {
-        "role": "user",
-        "content": [
-            {"type": "text", "text": "Выяви недостатки шрифтов: искаженный текст, слишком мелкий размер, неправильные межбуквенные интервалы или выравнивание."},
-            {"type": "image"},
-          ],
-      },
-  ]
-  prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
-
-  inputs = processor(images=image, text=prompt, return_tensors="pt").to(model.device)
-
-  output = model.generate(**inputs, max_new_tokens=800,  temperature=0.7, do_sample=True).cpu()
-
-  result.append(processor.decode(output[0], skip_special_tokens=True))
+  result.append(str(processor.decode(output[0], skip_special_tokens=True)).split(".assistant"))
   print(result)
 
 analyze_photo_by_text(url)
