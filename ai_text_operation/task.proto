@@ -89,6 +89,8 @@ message TaskShowResponse {
     optional ProductTaskShowItem product = 5;
     string createdAt = 6;
     string updatedAt = 7;
+    string recommendedDescription = 8;
+    string reviewsAnalysis = 9;
 }
 
 message TaskListResponse {
@@ -149,6 +151,39 @@ message UpdateReviewsAnalyzeRequest {
     string message = 2;
     CheckReviewsData data = 3;
 }
+
+message CheckFontsData {
+    int64 id = 1;
+    repeated string value = 2; 
+}
+
+message UpdateFontsAnalysisRequest {
+    bool success = 1;
+    string message = 2;
+    CheckFontsData data = 3;
+}
+
+message CheckQualityData {
+    int64 id = 1;
+    repeated string value = 2; 
+}
+
+message UpdateQualityAnalysisRequest {
+    bool success = 1;
+    string message = 2;
+    CheckQualityData data = 3;
+}
+
+message CheckTextOptimizationData {
+    int64 id = 1;
+    repeated string value = 2; 
+}
+
+message UpdateTextOptimizationRequest {
+    bool success = 1;
+    string message = 2;
+    CheckTextOptimizationData data = 3;
+}
   
 service TaskService {
     rpc List (TaskListRequest) returns (TaskListResponse);
@@ -159,4 +194,7 @@ service TaskService {
     rpc ShowProductReviews (ShowReviewsRequest) returns (ProductReviewsResponse);
     rpc UpdateDescription (UpdateDescriptionRequest) returns (google.protobuf.Empty);
     rpc UpdateReviewsAnalyze (UpdateReviewsAnalyzeRequest) returns (google.protobuf.Empty);
+    rpc UpdateFontsAnalysis (UpdateFontsAnalysisRequest) returns (google.protobuf.Empty);
+    rpc UpdateQuanlityAnalysis (UpdateQualityAnalysisRequest) returns (google.protobuf.Empty);
+    rpc UpdateTextOptimization (UpdateTextOptimizationRequest) returns (google.protobuf.Empty);
 }

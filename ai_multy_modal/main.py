@@ -1,11 +1,28 @@
-from transformers import LlavaNextProcessor, LlavaNextForConditionalGeneration,BitsAndBytesConfig
-import torch
-from PIL import Image
-import requests
+from transformers import LlavaNextProcessor, LlavaNextForConditionalGeneration
+from PIL import Image, ImageFile
+from io import BytesIO
+from pydantic import BaseModel
+from dotenv import load_dotenv
 
-config = BitsAndBytesConfig(
-    quantization_config={"load_in_8bit": True}
-)
+import sys
+import os
+
+sys.path.append(os.path.join(os.getcwd(), '..'))
+os.system('python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. task.proto')
+
+load_dotenv()
+import torch
+import json
+import requests
+import grpc
+import task_pb2
+import task_pb2_grpc
+import pika
+
+class PhotoMessage(BaseModel):
+    id: int
+    url: str
+    type: str
 
 print(torch.cuda.is_available())
 print(f"Is CUDA supported by this system? {torch.cuda.is_available()}")
@@ -30,10 +47,17 @@ model_directory = f"{model_name.split('/')[1]}-ai"
 
 model = LlavaNextForConditionalGeneration.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
 processor = LlavaNextProcessor.from_pretrained(model_name, do_resize=False)
-url = "image/5.webp"
-
-
 model = torch.compile(model)
+
+def request_to_multymodal(conversation: list, image:ImageFile):
+  prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
+
+  inputs = processor(images=image, text=prompt, return_tensors="pt").to(model.device)
+
+  output = model.generate(**inputs, max_new_tokens=800,  temperature=0.7, do_sample=True).cpu()
+
+  return(str(processor.decode(output[0], skip_special_tokens=True)).split(".assistant")[1])
+
 def analyze_photo(url):
   image = Image.open(url)
   conversation = [
@@ -53,41 +77,195 @@ def analyze_photo(url):
 
   print(processor.decode(output[0], skip_special_tokens=True))
 
-def analyze_photo_by_text(url):
-  result = []
-  image = Image.open(url)
-  conversation = [
-      {
-        "role": "user",
-        "content": [
-            {"type": "text", "text": "Оцени текст на изображении: насколько легко его прочитать? Укажи, виден ли текст четко, не сливается ли он с фоном."},
-            {"type": "image"},
-          ],
-      },
-  ]
-  prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
+def analyze_photo_by_fonts(message: PhotoMessage):
+    result = []
+    response = requests.get(message.url, timeout=3)
+    response.raise_for_status()
+    image = Image.open(BytesIO(response.content)).convert('RGB')
+    conversation = [
+        {
+          "role": "user",
+          "content": [
+              {"type": "text", "text": "Оцени текст на изображении: насколько легко его прочитать? Укажи, виден ли текст четко, не сливается ли он с фоном."},
+              {"type": "image"},
+            ],
+        },
+    ]
+    result.append(request_to_multymodal(conversation, image))
+    conversation = [
+        {
+          "role": "user",
+          "content": [
+              {"type": "text", "text": "Определи, подходит ли стиль шрифта данному изображению. Уместен ли он для карточки товара? Отнеси стиль шрифта к категории (например, строгий, декоративный, минималистичный)."},
+              {"type": "image"},
+            ],
+        },
+    ]
+    result.append(request_to_multymodal(conversation, image))
+    return result
 
-  inputs = processor(images=image, text=prompt, return_tensors="pt").to(model.device)
+def analyze_photo_by_quality(message: PhotoMessage):
+    result = []
+    response = requests.get(message.url, timeout=3)
+    response.raise_for_status()
+    image = Image.open(BytesIO(response.content)).convert('RGB')
+    conversation = [
+        {
+          "role": "user",
+          "content": [
+              {"type": "text", "text": "Оцени, является ли фотография профессиональной (студийной): проверь качество света, ровность фона, резкость и симметрию"},
+              {"type": "image"},
+            ],
+        },
+    ]
+    result.append(request_to_multymodal(conversation, image))
+    conversation = [
+        {
+          "role": "user",
+          "content": [
+              {"type": "text", "text": "Проанализируй фотографию на наличие теней, пересветов или размытости. Укажи, как можно улучшить эти параметры."},
+              {"type": "image"},
+            ],
+        },
+    ]
+    result.append(request_to_multymodal(conversation, image))
+    conversation = [
+        {
+          "role": "user",
+          "content": [
+              {"type": "text", "text": "Оцени фон изображения. Он однотонный или загроможденный? Соответствует ли он студийному стандарту (например, белый или серый фон)?"},
+              {"type": "image"},
+            ],
+        },
+    ]
+    result.append(request_to_multymodal(conversation, image))
+    return result
 
-  output = model.generate(**inputs, max_new_tokens=800,  temperature=0.7, do_sample=True).cpu()
+def analyze_photo_to_text_optimization(message: PhotoMessage):
+    result = []
+    response = requests.get(message.url, timeout=3)
+    response.raise_for_status()
+    image = Image.open(BytesIO(response.content)).convert('RGB')
+    conversation = [
+        {
+          "role": "user",
+          "content": [
+              {"type": "text", "text": "Рассмотри расположение текста на изображении. Укажи, гармонично ли он сочетается с визуальным фоном, не перекрывает ли ключевые элементы изображения."},
+              {"type": "image"},
+            ],
+        },
+    ]
+    result.append(request_to_multymodal(conversation, image))
+    return result
 
-  result.append(str(processor.decode(output[0], skip_special_tokens=True)).split(".assistant")[1])
-  conversation = [
-      {
-        "role": "user",
-        "content": [
-            {"type": "text", "text": "Определи, подходит ли стиль шрифта данному изображению. Уместен ли он для карточки товара? Отнеси стиль шрифта к категории (например, строгий, декоративный, минималистичный)."},
-            {"type": "image"},
-          ],
-      },
-  ]
-  prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
+def send_answer_to_fonts_analysis(success: bool, message:str, data: task_pb2.CheckFontsData):
+    try:
+        with grpc.insecure_channel(f"{os.getenv('GRPC_HOST')}:{os.getenv('GRPC_PORT')}") as channel:
+            stub = task_pb2_grpc.TaskServiceStub(channel)
+            request = task_pb2.UpdateFontsAnalysisRequest(
+                success=success,
+                message=message,
+                data=data
+            )
+            stub.UpdateFontsAnalysis(request)
+    except grpc.RpcError as e:
+        print(f"Error connecting to gRPC server: {e}")
+        return
+    
+def send_answer_to_text_optimization(success: bool, message:str, data: task_pb2.CheckTextOptimizationData):
+    try:
+        with grpc.insecure_channel(f"{os.getenv('GRPC_HOST')}:{os.getenv('GRPC_PORT')}") as channel:
+            stub = task_pb2_grpc.TaskServiceStub(channel)
+            request = task_pb2.UpdateTextOptimizationRequest(
+                success=success,
+                message=message,
+                data=data
+            )
+            stub.UpdateTextOptimization(request)
+    except grpc.RpcError as e:
+        print(f"Error connecting to gRPC server: {e}")
+        return
+    
+def send_answer_to_quality_analysis(success: bool, message:str, data: task_pb2.CheckQualityData):
+    try:
+        with grpc.insecure_channel(f"{os.getenv('GRPC_HOST')}:{os.getenv('GRPC_PORT')}") as channel:
+            stub = task_pb2_grpc.TaskServiceStub(channel)
+            request = task_pb2.UpdateDescriptionRequest(
+                success=success,
+                message=message,
+                data=data
+            )
+            stub.UpdateQualityAnalysisRequest(request)
+    except grpc.RpcError as e:
+        print(f"Error connecting to gRPC server: {e}")
+        return
 
-  inputs = processor(images=image, text=prompt, return_tensors="pt").to(model.device)
+def callback(ch, method, properties, body):
+    message = PhotoMessage(**json.loads(body))
+    if str(message.type) == 'text_optimization':
+        try:
+            send_answer_to_text_optimization(True, f"Success generate", task_pb2.CheckTextOptimizationData(
+                  id=message.id,
+                  value=analyze_photo_to_text_optimization(message)
+                  ))
+        except Exception as ex:
+            send_answer_to_text_optimization(False, f"Error generating reviews message: {ex}", task_pb2.CheckTextOptimizationData(
+                id=message.id,
+                value=[]
+                ))
+            print("Error")
+        finally:
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+            return     
+    elif str(message.type) == 'quality_analysis':
+        try:
+            send_answer_to_quality_analysis(True, f"Success generate", task_pb2.CheckQualityData(
+                  id=message.id,
+                  value=analyze_photo_by_quality(message)
+                  ))
+        except Exception as ex:
+            send_answer_to_quality_analysis(False, f"Error generating description message: {ex}", task_pb2.CheckQualityData(
+                id=message.id,
+                value=[]
+                ))
+            print("Error")
+        finally:
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+            return 
+    elif str(message.type) == 'fonts_analysis':
+        try:
+            send_answer_to_fonts_analysis(True, f"Success generate", task_pb2.CheckFontsData(
+                id=message.id,
+                value=analyze_photo_by_fonts(message)
+                ))
+        except Exception as ex:
+            send_answer_to_fonts_analysis(False, f"Error generating description message: {ex}", task_pb2.CheckFontsData(
+                id=message.id,
+                value=[]
+                ))
+            print("Error")
+        finally:
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+            return 
+    print("Done")
 
-  output = model.generate(**inputs, max_new_tokens=800,  temperature=0.7, do_sample=True).cpu()
 
-  result.append(str(processor.decode(output[0], skip_special_tokens=True)).split(".assistant")[1])
-  print(result)
+def start_seo_consumer():
+    credentials = pika.PlainCredentials(os.getenv('RABBITMQ_LOGIN'), os.getenv('RABBITMQ_PASSWORD'))
+    connection = pika.BlockingConnection(pika.ConnectionParameters(os.getenv('RABBITMQ_HOST'), os.getenv('RABBITMQ_PORT'), credentials=credentials))
+    queue_name = 'photo_analysis'
+    channel = connection.channel()
 
-analyze_photo_by_text(url)
+    channel.exchange_declare(exchange=queue_name, exchange_type='direct', durable=False)
+    channel.queue_declare(queue=queue_name, passive=True)
+
+    channel.basic_consume(
+        queue=queue_name,
+        on_message_callback=callback,
+        auto_ack=False 
+    )
+    print("Definition photo consumer waiting for messages...")
+    channel.start_consuming()
+
+if __name__ == "__main__":
+    start_seo_consumer()
