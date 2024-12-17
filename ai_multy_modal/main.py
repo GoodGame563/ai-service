@@ -47,6 +47,7 @@ model_directory = f"{model_name.split('/')[1]}-ai"
 
 model = LlavaNextForConditionalGeneration.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
 processor = LlavaNextProcessor.from_pretrained(model_name, do_resize=False)
+model.config.pad_token_id = model.config.eos_token_id
 model = torch.compile(model)
 
 def request_to_multymodal(conversation: list, image:ImageFile):
