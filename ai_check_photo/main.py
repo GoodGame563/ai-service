@@ -28,7 +28,7 @@ print(f"Is CUDA supported by this system? {torch.cuda.is_available()}")
 print(f"CUDA version: {torch.version.cuda}")
 
 if torch.cuda.is_available():
-    device = torch.device("cuda:1")
+    device = torch.device("cpu")
 else:
     device = torch.device("cpu")
 
@@ -38,10 +38,10 @@ processor_name = "microsoft/resnet-50"
 model_directory = f"{model_name.split('/')[1]}-ai"
 
 try:
-    model = AutoModelForImageClassification.from_pretrained(model_directory, device_map="cpu")
+    model = AutoModelForImageClassification.from_pretrained(model_directory).to('divece')
     processor = AutoImageProcessor.from_pretrained(model_directory, do_resize=False)
 except:
-    model = AutoModelForImageClassification.from_pretrained(model_name, device_map="cpu")
+    model = AutoModelForImageClassification.from_pretrained(model_name,).to('device')
     model.save_pretrained(model_directory)
     processor = AutoImageProcessor.from_pretrained(processor_name, do_resize=False)
     processor.save_pretrained(model_directory)
