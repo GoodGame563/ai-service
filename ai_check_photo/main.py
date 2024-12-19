@@ -38,10 +38,10 @@ processor_name = "microsoft/resnet-50"
 model_directory = f"{model_name.split('/')[1]}-ai"
 
 try:
-    model = AutoModelForImageClassification.from_pretrained(model_directory).to('divece')
+    model = AutoModelForImageClassification.from_pretrained(model_directory).to(device)
     processor = AutoImageProcessor.from_pretrained(model_directory, do_resize=False)
 except:
-    model = AutoModelForImageClassification.from_pretrained(model_name,).to('device')
+    model = AutoModelForImageClassification.from_pretrained(model_name,).to(device)
     model.save_pretrained(model_directory)
     processor = AutoImageProcessor.from_pretrained(processor_name, do_resize=False)
     processor.save_pretrained(model_directory)
