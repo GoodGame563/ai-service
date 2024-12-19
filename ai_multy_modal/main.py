@@ -169,8 +169,8 @@ def send_answer_to_fonts_analysis(success: bool, message:str, data: task_pb2.Che
                 data=data
             )
             stub.UpdateFontsAnalysis(request)
-    except grpc.RpcError as e:
-        print(f"Error connecting to gRPC server: {e}")
+    except Exception as e:
+        print(f"Error: {e}")
         return
     
 def send_answer_to_text_optimization(success: bool, message:str, data: task_pb2.CheckTextOptimizationData):
@@ -183,8 +183,8 @@ def send_answer_to_text_optimization(success: bool, message:str, data: task_pb2.
                 data=data
             )
             stub.UpdateTextOptimization(request)
-    except grpc.RpcError as e:
-        print(f"Error connecting to gRPC server: {e}")
+    except Exception as e:
+        print(f"Error: {e}")
         return
     
 def send_answer_to_quality_analysis(success: bool, message:str, data: task_pb2.CheckQualityData):
@@ -197,8 +197,8 @@ def send_answer_to_quality_analysis(success: bool, message:str, data: task_pb2.C
                 data=data
             )
             stub.UpdateQualityAnalysisRequest(request)
-    except grpc.RpcError as e:
-        print(f"Error connecting to gRPC server: {e}")
+    except Exception as e:
+        print(f"Error: {e}")
         return
 
 def callback(ch, method, properties, body):
