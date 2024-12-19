@@ -1,5 +1,4 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
-import torchvision.models as models
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
