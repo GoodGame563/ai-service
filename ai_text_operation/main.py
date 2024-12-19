@@ -47,13 +47,13 @@ class ReviewsMessage(BaseModel):
 model_directory = "./qwen_model-ai"
 try:
     tokenizer = AutoTokenizer.from_pretrained(model_directory)
-    model = AutoModelForCausalLM.from_pretrained(model_directory, device_map="balanced")
+    model = AutoModelForCausalLM.from_pretrained(model_directory)
 except:
     model_name = "Qwen/Qwen2.5-1.5B-Instruct"
     local_directory = "./qwen_model"
 
     tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForCausalLM.from_pretrained(model_name, device_map="balanced")
+    model = AutoModelForCausalLM.from_pretrained(model_name)
 
     tokenizer.save_pretrained(local_directory)
     model.save_pretrained(local_directory)
@@ -63,7 +63,7 @@ print(f"Is CUDA supported by this system? {torch.cuda.is_available()}")
 print(f"CUDA version: {torch.version.cuda}")
 
 device = torch.device("cuda:0")
-# model = model.to(device)
+model = model.to(device)
 
 
 
