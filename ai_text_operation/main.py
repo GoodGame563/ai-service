@@ -291,7 +291,7 @@ def callback(ch, method, properties, body):
                 id=message.id,
                 value=""
                 ))
-            print("Error")
+            print(f"Error {ex}")
         finally:
             ch.basic_ack(delivery_tag=method.delivery_tag)
             return
@@ -314,7 +314,7 @@ def callback(ch, method, properties, body):
                 id=message.id,
                 value=""
                 ))
-            print("Error")
+            print(f"Error {ex}")
         finally:
             ch.basic_ack(delivery_tag=method.delivery_tag)
             return   
