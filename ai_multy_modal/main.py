@@ -45,7 +45,7 @@ model_directory = f"{model_name.split('/')[1]}-ai"
 #     processor = LlavaNextProcessor.from_pretrained(model_name, do_resize=False)
 #     processor.save_pretrained(model_directory)
 
-model = LlavaNextForConditionalGeneration.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
+model = LlavaNextForConditionalGeneration.from_pretrained(model_name, torch_dtype=torch.float16, device_map="cuda:0")
 processor = LlavaNextProcessor.from_pretrained(model_name, do_resize=False)
 model.config.pad_token_id = model.config.eos_token_id
 model = torch.compile(model)
