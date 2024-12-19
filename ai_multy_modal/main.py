@@ -191,12 +191,12 @@ def send_answer_to_quality_analysis(success: bool, message:str, data: task_pb2.C
     try:
         with grpc.insecure_channel(f"{os.getenv('GRPC_HOST')}:{os.getenv('GRPC_PORT')}") as channel:
             stub = task_pb2_grpc.TaskServiceStub(channel)
-            request = task_pb2.UpdateDescriptionRequest(
+            request = task_pb2.UpdateQualityAnalysisRequest(
                 success=success,
                 message=message,
                 data=data
             )
-            stub.UpdateQualityAnalysisRequest(request)
+            stub.UpdateQuanlityAnalysis(request)
     except Exception as e:
         print(f"Error: {e}")
         return
