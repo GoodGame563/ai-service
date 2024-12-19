@@ -62,7 +62,7 @@ print(torch.cuda.is_available())
 print(f"Is CUDA supported by this system? {torch.cuda.is_available()}")
 print(f"CUDA version: {torch.version.cuda}")
 
-device = torch.device("cuda")
+device = torch.device("cuda:1")
 model = model.to(device)
 
 
