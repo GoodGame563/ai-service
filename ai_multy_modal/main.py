@@ -56,9 +56,8 @@ def request_to_multymodal(conversation: list, image:ImageFile):
     inputs = processor(images=image, text=prompt, return_tensors="pt").to(model.device)
 
     output = model.generate(**inputs, max_new_tokens=800,  temperature=0.7, do_sample=True).cpu()
-    output_str = str(processor.decode(output[0], skip_special_tokens=True))
-    print(output_str)
-    return(output_str)
+
+    return(str(processor.decode(output[0], skip_special_tokens=True)).split("assistant")[1])
 
 def analyze_photo(url):
   image = Image.open(url)
