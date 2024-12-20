@@ -1,2 +1,2 @@
-sudo nohup python3 main.py > ai_check_photo.log
-echo "Все скрипты запущены с правами sudo!"
+sudo nohup python3 ./main.py > ai_check_photo.log
+echo "Cкрипт запущены с правами sudo!"

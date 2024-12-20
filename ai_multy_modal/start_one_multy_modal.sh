@@ -1,2 +1,2 @@
-sudo nohup python3 main.py > ai_multy_modal.log
-echo "Все скрипты запущены с правами sudo!"
+sudo nohup python3 ./main.py > ai_multy_modal.log
+echo "Cкрипт запущены с правами sudo!"
