@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 
 import sys
 import os
+import time
 
 sys.path.append(os.path.join(os.getcwd(), '..'))
 os.system('python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. task.proto')
@@ -252,21 +253,34 @@ def callback(ch, method, properties, body):
 
 
 def start_seo_consumer():
-    credentials = pika.PlainCredentials(os.getenv('RABBITMQ_LOGIN'), os.getenv('RABBITMQ_PASSWORD'))
-    connection = pika.BlockingConnection(pika.ConnectionParameters(os.getenv('RABBITMQ_HOST'), os.getenv('RABBITMQ_PORT'), credentials=credentials))
-    queue_name = 'photo_analysis'
-    channel = connection.channel()
+    repit = 5
+    while True:
+        try:
+            credentials = pika.PlainCredentials(os.getenv('RABBITMQ_LOGIN'), os.getenv('RABBITMQ_PASSWORD'))
+            connection = pika.BlockingConnection(pika.ConnectionParameters(os.getenv('RABBITMQ_HOST'), os.getenv('RABBITMQ_PORT'), credentials=credentials))
+            queue_name = 'photo_analysis'
+            channel = connection.channel()
 
-    channel.exchange_declare(exchange=queue_name, exchange_type='direct', durable=False)
-    channel.queue_declare(queue=queue_name, passive=True)
+            channel.exchange_declare(exchange=queue_name, exchange_type='direct', durable=False)
+            channel.queue_declare(queue=queue_name, passive=True)
 
-    channel.basic_consume(
-        queue=queue_name,
-        on_message_callback=callback,
-        auto_ack=False 
-    )
-    print("Definition photo consumer waiting for messages...")
-    channel.start_consuming()
+            channel.basic_consume(
+                queue=queue_name,
+                on_message_callback=callback,
+                auto_ack=False 
+            )
+            print("Definition photo consumer waiting for messages...")
+            repit = 5
+            channel.start_consuming()
+            
+
+        except Exception as ex:
+            print(f"Error starting consumer: {ex}")
+            if repit == 0: 
+                break
+            print(f"Засыпаю на {1800/repit/60} минут")
+            time.sleep(1800/repit)
+            repit -= 1
 
 if __name__ == "__main__":
     start_seo_consumer()
