@@ -329,6 +329,7 @@ def start_seo_consumer():
             connection = pika.BlockingConnection(pika.ConnectionParameters(os.getenv('RABBITMQ_HOST'), os.getenv('RABBITMQ_PORT'), credentials=credentials))
             queue_name = 'seo_queue'
             channel = connection.channel()
+            channel.basic_qos(prefetch_count=1)
 
             channel.exchange_declare(exchange=queue_name, exchange_type='direct', durable=False)
             channel.queue_declare(queue=queue_name, passive=True)
