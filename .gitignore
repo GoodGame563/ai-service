@@ -4,3 +4,4 @@
 test_*
 .env
 task_*
+__pycache__
