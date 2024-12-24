@@ -184,7 +184,7 @@ def analyze_all(message: PhotoMessageV2):
         response.raise_for_status()
         all_images.append(Image.open(BytesIO(response.content)).convert('RGB'))
     for m in message.competitors:
-        for i in m:
+        for i in m[:5]:
             response = requests.get(i, timeout=3)
             response.raise_for_status()
             all_images.append(Image.open(BytesIO(response.content)).convert('RGB'))
