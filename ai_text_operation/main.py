@@ -517,5 +517,5 @@ def start_seo_consumer():
             repit -= 1
 
 if __name__ == "__main__":
-    # start_seo_consumer()
+    start_seo_consumer()
     pass

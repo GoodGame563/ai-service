@@ -263,7 +263,7 @@ def start_seo_consumer():
         try:
             credentials = pika.PlainCredentials(os.getenv('RABBITMQ_LOGIN'), os.getenv('RABBITMQ_PASSWORD'))
             connection = pika.BlockingConnection(pika.ConnectionParameters(os.getenv('RABBITMQ_HOST'), os.getenv('RABBITMQ_PORT'), credentials=credentials))
-            queue_name = 'photo_analysis'
+            queue_name = 'photo_queue_v2'
             channel = connection.channel()
             channel.basic_qos(prefetch_count=1)
 
@@ -289,5 +289,5 @@ def start_seo_consumer():
             repit -= 1
 
 if __name__ == "__main__":
-    # start_seo_consumer()
+    start_seo_consumer()
     pass
