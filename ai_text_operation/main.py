@@ -423,11 +423,10 @@ def callback(ch, method, properties, body):
                 value=result
                 ))
         except Exception as ex:
-            pass
-            # send_answer_to_reviews_v2(False, f"Error generating reviews message: {ex}", task_pb2.ReviewsAnalysisV2(
-            #     id=message.id,
-            #     value=""
-            #     ))
+            send_answer_to_reviews_v2(False, f"Error generating reviews message: {ex}", task_pb2.ReviewsAnalysisV2(
+                id=message.id,
+                value=""
+                ))
         finally:
             ch.basic_ack(delivery_tag=method.delivery_tag)
             return 
@@ -440,11 +439,10 @@ def callback(ch, method, properties, body):
                 value=result
                 ))
         except Exception as ex:
-            pass
-            # send_answer_to_description_v2(False, f"Error generating reviews message: {ex}", task_pb2.SEOAnalysisV2(
-            #     id=message.id,
-            #     value=""
-            #     ))
+            send_answer_to_description_v2(False, f"Error generating reviews message: {ex}", task_pb2.SEOAnalysisV2(
+                id=message.id,
+                value=""
+                ))
         finally:
             ch.basic_ack(delivery_tag=method.delivery_tag)
             return 
