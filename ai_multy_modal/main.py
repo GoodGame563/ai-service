@@ -185,7 +185,7 @@ def analyze_all(message: PhotoMessageV2):
     for i in message.product:
         response = requests.get(i, timeout=3)
         response.raise_for_status()
-        all_images.append(Image.open(BytesIO(response.content)).convert('RGB'))
+        all_images.append(Image.open(BytesIO(response.content)))
     for m in message.competitors:
         m = m[:1]
         count_img += len(m)
@@ -193,7 +193,7 @@ def analyze_all(message: PhotoMessageV2):
         for i in m:
             response = requests.get(i, timeout=3)
             response.raise_for_status()
-            all_images.append(Image.open(BytesIO(response.content)).convert('RGB'))
+            all_images.append(Image.open(BytesIO(response.content)))
     print(count_img)
 
     conversation = [
