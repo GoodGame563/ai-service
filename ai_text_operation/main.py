@@ -23,7 +23,7 @@ load_dotenv()
 
 class ReviewsProductItemV2(BaseModel):
     name: str
-    reviews: str
+    reviews_url: str
 
 class SeoProductItem(BaseModel):
     name: str
@@ -54,6 +54,7 @@ class ReviewsMessage(BaseModel):
 
 class ReviewsMessageV2(BaseModel):
     id: int
+    type: str
     product: ReviewsProductItemV2
     competitors: list[ReviewsProductItemV2]
 
