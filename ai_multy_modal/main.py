@@ -180,14 +180,14 @@ def analyze_photo_to_text_optimization(message: PhotoMessage):
 def analyze_all(message: PhotoMessageV2):
     all_images = []
     count_img = 0
-    message.product = message.product[:4]
+    message.product = message.product[:1]
     count_img += len(message.product)
     for i in message.product:
         response = requests.get(i, timeout=3)
         response.raise_for_status()
         all_images.append(Image.open(BytesIO(response.content)).convert('RGB'))
     for m in message.competitors:
-        m = m[:4]
+        m = m[:1]
         count_img += len(m)
         print(len(m))
         for i in m:
