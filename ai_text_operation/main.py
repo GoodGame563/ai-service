@@ -54,7 +54,6 @@ class ReviewsMessage(BaseModel):
 
 class ReviewsMessageV2(BaseModel):
     id: int
-    type: str
     product: ReviewsProductItemV2
     competitors: list[ReviewsProductItemV2]
 
