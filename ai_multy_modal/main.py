@@ -247,7 +247,7 @@ def send_answer_to_quality_analysis(success: bool, message:str, data: task_pb2.C
         return
 
 def callback(ch, method, properties, body):
-    
+    print(body)
     message = PhotoMessageV2(**json.loads(body))
     # try:
     analyze_all(message)
