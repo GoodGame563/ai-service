@@ -240,7 +240,7 @@ def generate_new_text_with_concurent_text(main_element:SeoProductItem, elements:
     for element in  elements:
         prompt += f"\nНазвание: {element.name}\nОписание: {element.description}\n"
     messages = [
-        {"role": "system", "content": "Ты — аналитик по улучшению описаний товаров для маркетплейсов. Твоя задача — анализировать тексты, находить тенденции в описаниях конкурентов и давать рекомендации для улучшения описания нашего товара. Все выводы должны быть четкими, профессиональными и следовать единому стилю. Выводы структурируй в формате: Анализ описаний, Выявленные тенденции, Рекомендации. Все твои рекомендации должны быть направленны на улучшение только текстовой составлящей нашего товара.\n\nПроанализируй описания и дай рекомендации, что стоит добавить или изменить в нашем описании, чтобы сделать его более конкурентоспособным."},
+        {"role": "system", "content": "Ты — аналитик по улучшению описаний товаров для маркетплейсов. Твоя задача — анализировать тексты, находить тенденции в описаниях конкурентов и давать рекомендации для улучшения описания нашего товара. Все выводы должны быть четкими, профессиональными и следовать единому стилю. Выводы структурируй в формате: Выявленные тенденции, Рекомендации. Все твои рекомендации должны быть направленны на улучшение только текстовой составлящей нашего товара."},
         {"role": "user", "content": prompt}
     ]
     text = tokenizer.apply_chat_template(
@@ -421,11 +421,11 @@ def callback(ch, method, properties, body):
                 value=result
                 ))
         except Exception as ex:
-            print(f"Error {ex}")
-            send_answer_to_reviews_v2(False, f"Error generating reviews message: {ex}", task_pb2.ReviewsAnalysisV2(
-                id=message.id,
-                value=""
-                ))
+            pass
+            # send_answer_to_reviews_v2(False, f"Error generating reviews message: {ex}", task_pb2.ReviewsAnalysisV2(
+            #     id=message.id,
+            #     value=""
+            #     ))
         finally:
             ch.basic_ack(delivery_tag=method.delivery_tag)
             return 
@@ -438,10 +438,11 @@ def callback(ch, method, properties, body):
                 value=result
                 ))
         except Exception as ex:
-            send_answer_to_description_v2(False, f"Error generating reviews message: {ex}", task_pb2.SEOAnalysisV2(
-                id=message.id,
-                value=""
-                ))
+            pass
+            # send_answer_to_description_v2(False, f"Error generating reviews message: {ex}", task_pb2.SEOAnalysisV2(
+            #     id=message.id,
+            #     value=""
+            #     ))
         finally:
             ch.basic_ack(delivery_tag=method.delivery_tag)
             return 
