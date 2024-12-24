@@ -237,7 +237,6 @@ def generate_new_text_with_seo_words_v2(main_element:Product, elements:list[Prod
 
 def generate_new_text_with_concurent_text(main_element:SeoProductItem, elements:list[SeoProductItem]) ->str:
     prompt = f"Данные для анализа:\n\n1. Наш товар:\n- Название: {main_element.name}\n- Описание: {main_element.description}\n\n2. Товары конкурентов:"
-    prompt
     for element in  elements:
         prompt += f"\nНазвание: {element.name}\nОписание: {element.description}\n"
     prompt += "\n\nПроанализируй описания и дай рекомендации, что стоит добавить или изменить в нашем описании, чтобы сделать его более конкурентоспособным."
@@ -254,8 +253,8 @@ def generate_new_text_with_concurent_text(main_element:SeoProductItem, elements:
 
     generated_ids = model.generate(
         **model_inputs,
-        temperature=0.8,
-        max_new_tokens=2048
+        temperature=1.0,
+        max_new_tokens=4096
     )
     generated_ids = [
         output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
@@ -413,7 +412,7 @@ def send_answer_to_reviews_v2(success: bool, message:str, data: task_pb2.Reviews
 
 def callback(ch, method, properties, body):
     raw_type_message = json.loads(body)
-    print(raw_type_message['type'])
+    print(str(raw_type_message['type']) == 'reviews')
     if str(raw_type_message['type']) == 'reviews':
         try:
             message = ReviewsMessageV2(**json.loads(body))
