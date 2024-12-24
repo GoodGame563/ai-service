@@ -202,6 +202,7 @@ def analyze_all(message: PhotoMessageV2):
 
     text = request_to_multymodal_V2(conversation=conversation, image= all_images)
     print(text)
+    return text
 
 def send_answer_to_fonts_analysis(success: bool, message:str, data: task_pb2.CheckFontsData):
     try:
@@ -249,7 +250,7 @@ def callback(ch, method, properties, body):
     
     message = PhotoMessageV2(**json.loads(body))
     try:
-        pass
+        analyze_all(message)
     
     finally:
         ch.basic_ack(delivery_tag=method.delivery_tag)
