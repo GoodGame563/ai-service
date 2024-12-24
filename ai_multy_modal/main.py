@@ -186,7 +186,7 @@ def analyze_all(message: PhotoMessageV2):
         response = requests.get(i, timeout=3)
         response.raise_for_status()
         all_images.append(Image.open(BytesIO(response.content)).convert('RGB').resize((500, 500), Image.LANCZOS))
-    message.competitors = message.competitors[0:3]
+    message.competitors = message.competitors[0:1]
     for m in message.competitors:
         m = m[:1]
         count_img += len(m)
