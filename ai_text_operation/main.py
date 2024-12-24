@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import sys
 import os
 import time
+import requests
 
 sys.path.append(os.path.join(os.getcwd(), '..'))
 os.system('python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. task.proto')
@@ -19,6 +20,14 @@ import json
 
 
 load_dotenv()
+
+class ReviewsProductItemV2(BaseModel):
+    name: str
+    reviews: str
+
+class SeoProductItem(BaseModel):
+    name: str
+    description: str
 
 class SeoWord(BaseModel):
     keyword_id: str
@@ -42,6 +51,20 @@ class ReviewsMessage(BaseModel):
     id: int
     type: str
     reviews: list[str]
+
+class ReviewsMessageV2(BaseModel):
+    id: int
+    type: str
+    product: ReviewsProductItemV2
+    competitors: list[ReviewsProductItemV2]
+
+class SEOMessageV2(BaseModel):
+    id:int 
+    type: str
+    product: SeoProductItem
+    competitors: list[SeoProductItem]
+
+
 
 
 model_directory = "./qwen_model-ai"
@@ -212,7 +235,34 @@ def generate_new_text_with_seo_words_v2(main_element:Product, elements:list[Prod
     final = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
     return final
 
+def generate_new_text_with_concurent_text(main_element:SeoProductItem, elements:list[SeoProductItem]) ->str:
+    prompt = f"Данные для анализа:\n\n1. Наш товар:\n- Название: {main_element.name}\n- Описание: {main_element.description}\n\n2. Товары конкурентов:"
+    prompt
+    for element in  elements:
+        prompt += f"\nНазвание: {element.name}\nОписание: {element.description}\n"
+    prompt += "\n\nПроанализируй описания и дай рекомендации, что стоит добавить или изменить в нашем описании, чтобы сделать его более конкурентоспособным."
+    messages = [
+        {"role": "system", "content": "Ты — аналитик по улучшению описаний товаров для маркетплейсов. Твоя задача — анализировать тексты, находить тенденции в описаниях конкурентов и давать рекомендации для улучшения описания нашего товара. Все выводы должны быть четкими, профессиональными и следовать единому стилю. Выводы структурируй в формате: Анализ описаний, Выявленные тенденции, Рекомендации."},
+        {"role": "user", "content": prompt}
+    ]
+    text = tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=True
+    )
+    model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
 
+    generated_ids = model.generate(
+        **model_inputs,
+        temperature=0.8,
+        max_new_tokens=2048
+    )
+    generated_ids = [
+        output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
+    ]
+    final = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+    print(final)
+    return final
 
 def generate_by_reviews(reviews:list[str]) -> str:
     reviews_str = ""
@@ -245,6 +295,64 @@ def generate_by_reviews(reviews:list[str]) -> str:
     final = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
     return final
 
+def generate_by_reviews_v2(reviews:ReviewsMessageV2) -> str:
+    prompt = f"Данные для анализа:\n\n1. Наше название :\n {reviews.product.name}"
+    r_reviews = requests.get(reviews.product.reviews).text
+    prompt += f"\n Наши отзывы{r_reviews}"
+    for r in reviews.competitors:
+        r_r = requests.get(r.reviews).text
+        prompt += f"Название конкурентов {r.name}\nОтзывы конкурентов {r_r}"
+
+
+    messages = [
+        {"role": "system", "content": """Вот список отзывов о нашем продукте и продуктах конкурентов на маркетплейсе. Проанализируй их и предоставь следующие данные:
+
+            Что хвалят в продуктах конкурентов? Перечисли основные достоинства, которые отмечают пользователи.
+            Какие недостатки конкурентов упоминаются наиболее часто?
+            Что пользователи хвалят в нашем продукте?
+            Какие недостатки упоминаются в отзывах о нашем продукте?
+            На основании анализа, предложи идеи для улучшения нашего товара, чтобы он стал привлекательнее для покупателей, учитывая сильные стороны конкурентов.
+            Формат ответа:
+            1. Достоинства конкурентов:
+
+            [Описание достоинства 1]
+            [Описание достоинства 2]
+            2. Недостатки конкурентов:
+
+            [Описание недостатка 1]
+            [Описание недостатка 2]
+            3. Достоинства нашего товара:
+
+            [Описание достоинства 1]
+            [Описание достоинства 2]
+            4. Недостатки нашего товара:
+
+            [Описание недостатка 1]
+            [Описание недостатка 2]
+            5. Рекомендации по улучшению:
+
+            [Описание рекомендации 1]
+            [Описание рекомендации 2]"""},
+        {"role": "user", "content": prompt}
+    ]
+    text = tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=True
+    )
+    model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
+
+    generated_ids = model.generate(
+        **model_inputs,
+        temperature=0.8,
+        max_new_tokens=2048
+    )
+    generated_ids = [
+        output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
+    ]
+    final = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+    print(final)
+    return final
 def send_answer_to_description(success: bool, message:str, data: task_pb2.CheckDescriptionData):
     try:
         with grpc.insecure_channel(f"{os.getenv('GRPC_HOST')}:{os.getenv('GRPC_PORT')}") as channel:
@@ -273,51 +381,109 @@ def send_answer_to_reviews(success: bool, message:str, data: task_pb2.CheckRevie
         print(f"Error connecting to gRPC server: {e}")
         return
 
+def send_answer_to_description_v2(success: bool, message:str, data: task_pb2.SEOAnalysisV2):
+    try:
+        with grpc.insecure_channel(f"{os.getenv('GRPC_HOST')}:{os.getenv('GRPC_PORT')}") as channel:
+            stub = task_pb2_grpc.TaskServiceStub(channel)
+            request = task_pb2.UpdateSEOAnalysisV2Request(
+                success=success,
+                message=message,
+                data=data
+            )
+            stub.UpdateSEOAnalysisV2(request)
+    except grpc.RpcError as e:
+        print(f"Error connecting to gRPC server: {e}")
+        return
 
+def send_answer_to_reviews_v2(success: bool, message:str, data: task_pb2.ReviewsAnalysisV2):
+    try:
+        with grpc.insecure_channel(f"{os.getenv('GRPC_HOST')}:{os.getenv('GRPC_PORT')}") as channel:
+            stub = task_pb2_grpc.TaskServiceStub(channel)
+            request = task_pb2.UpdateReviewsAnalysisV2Request(
+                success=success,
+                message=message,
+                data=data
+            )
+            stub.UpdateReviewsAnalysisV2(request)
+    except grpc.RpcError as e:
+        print(f"Error connecting to gRPC server: {e}")
+        return
 
 def callback(ch, method, properties, body):
     raw_type_message = json.loads(body)
-
     if str(raw_type_message['type']) == 'reviews':
         try:
-            message = ReviewsMessage(**json.loads(body))
-            result = generate_by_reviews(message.reviews)
-            send_answer_to_reviews(True, "All reviews processed", task_pb2.CheckReviewsData(
+            message = ReviewsMessageV2(**json.loads(body))
+            result = generate_by_reviews_v2(message)
+            send_answer_to_reviews_v2(True, f"Success", task_pb2.ReviewsAnalysisV2(
                 id=message.id,
                 value=result
                 ))
         except Exception as ex:
-            send_answer_to_reviews(False, f"Error generating reviews message: {ex}", task_pb2.CheckReviewsData(
+            send_answer_to_reviews_v2(False, f"Error generating reviews message: {ex}", task_pb2.ReviewsAnalysisV2(
                 id=message.id,
                 value=""
                 ))
-            print(f"Error {ex}")
         finally:
             ch.basic_ack(delivery_tag=method.delivery_tag)
-            return
-        
-    elif str(raw_type_message['type']) == 'seo_v1' or str(raw_type_message['type']) == 'seo_v2':
+            return 
+    elif str(raw_type_message['type']) == 'seo':
         try:
-            message = SeoMessage(**json.loads(body))
-            result = ""
-            if message.type == 'seo_v1':
-                result = generate_new_text_with_seo_words_v1(message.product, message.competitors)
-            else:
-                result = generate_new_text_with_seo_words_v2(message.product, message.competitors)
-
-            send_answer_to_description(True, "Description processed",task_pb2.CheckDescriptionData(
+            message = SEOMessageV2(**json.loads(body))
+            result = generate_new_text_with_concurent_text(message.product, message.competitors)
+            send_answer_to_description_v2(True,  f"Success", task_pb2.SEOAnalysisV2(
                 id=message.id,
                 value=result
                 ))
         except Exception as ex:
-            send_answer_to_description(False, f"Error generating description message: {ex}", task_pb2.CheckDescriptionData(
+            send_answer_to_description_v2(False, f"Error generating reviews message: {ex}", task_pb2.SEOAnalysisV2(
                 id=message.id,
                 value=""
                 ))
-            print(f"Error {ex}")
         finally:
             ch.basic_ack(delivery_tag=method.delivery_tag)
-            return   
+            return 
+
+    # if str(raw_type_message['type']) == 'reviews':
+    #     try:
+    #         message = ReviewsMessage(**json.loads(body))
+    #         result = generate_by_reviews(message.reviews)
+    #         send_answer_to_reviews(True, "All reviews processed", task_pb2.CheckReviewsData(
+    #             id=message.id,
+    #             value=result
+    #             ))
+    #     except Exception as ex:
+    #         send_answer_to_reviews(False, f"Error generating reviews message: {ex}", task_pb2.CheckReviewsData(
+    #             id=message.id,
+    #             value=""
+    #             ))
+    #         print(f"Error {ex}")
+    #     finally:
+    #         ch.basic_ack(delivery_tag=method.delivery_tag)
+    #         return
+        
+    # elif str(raw_type_message['type']) == 'seo_v1' or str(raw_type_message['type']) == 'seo_v2':
+        # try:
+        #     message = SeoMessage(**json.loads(body))
+        #     result = ""
+        #     if message.type == 'seo_v1':
+        #         result = generate_new_text_with_seo_words_v1(message.product, message.competitors)
+        #     else:
+        #         result = generate_new_text_with_seo_words_v2(message.product, message.competitors)
+
+        #     send_answer_to_description(True, "Description processed",task_pb2.CheckDescriptionData(
+        #         id=message.id,
+        #         value=result
+        #         ))
+        # except Exception as ex:
+        #     send_answer_to_description(False, f"Error generating description message: {ex}", task_pb2.CheckDescriptionData(
+        #         id=message.id,
+        #         value=""
+        #         ))
+        #     print(f"Error {ex}")
+        # finally:
+        #     ch.basic_ack(delivery_tag=method.delivery_tag)
+        #     return   
     print("Done")
 
 
@@ -327,7 +493,7 @@ def start_seo_consumer():
         try:
             credentials = pika.PlainCredentials(os.getenv('RABBITMQ_LOGIN'), os.getenv('RABBITMQ_PASSWORD'))
             connection = pika.BlockingConnection(pika.ConnectionParameters(os.getenv('RABBITMQ_HOST'), os.getenv('RABBITMQ_PORT'), credentials=credentials))
-            queue_name = 'seo_queue'
+            queue_name = 'seo_queue_v2'
             channel = connection.channel()
             channel.basic_qos(prefetch_count=1)
 
@@ -351,4 +517,5 @@ def start_seo_consumer():
             repit -= 1
 
 if __name__ == "__main__":
-    start_seo_consumer()
+    # start_seo_consumer()
+    pass

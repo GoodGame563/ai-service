@@ -25,6 +25,12 @@ class PhotoMessage(BaseModel):
     url: str
     type: str
 
+class PhotoMessageV2(BaseModel):
+    id: int 
+    product: list[str]
+    competitors: list[list[str]]
+
+
 print(torch.cuda.is_available())
 print(f"Is CUDA supported by this system? {torch.cuda.is_available()}")
 print(f"CUDA version: {torch.version.cuda}")
@@ -51,7 +57,18 @@ processor = LlavaNextProcessor.from_pretrained(model_name, do_resize=False)
 model.config.pad_token_id = model.config.eos_token_id
 model = torch.compile(model)
 
+
+
 def request_to_multymodal(conversation: list, image:ImageFile):
+    prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
+
+    inputs = processor(images=image, text=prompt, return_tensors="pt").to(model.device)
+
+    output = model.generate(**inputs, max_new_tokens=800,  temperature=0.7, do_sample=True).cpu()
+
+    return(str(processor.decode(output[0], skip_special_tokens=True)).split("assistant")[1])
+
+def request_to_multymodal_V2(conversation: list, image:list[ImageFile]):
     prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
 
     inputs = processor(images=image, text=prompt, return_tensors="pt").to(model.device)
@@ -160,6 +177,32 @@ def analyze_photo_to_text_optimization(message: PhotoMessage):
     result.append(request_to_multymodal(conversation, image))
     return result
 
+def analyze_all(message: PhotoMessageV2):
+    all_images = []
+    for i in message.product:
+        response = requests.get(i, timeout=3)
+        response.raise_for_status()
+        all_images.append(Image.open(BytesIO(response.content)).convert('RGB'))
+    for m in message.competitors:
+        for i in m:
+            response = requests.get(i, timeout=3)
+            response.raise_for_status()
+            all_images.append(Image.open(BytesIO(response.content)).convert('RGB'))
+
+
+    conversation = [
+        {
+          "role": "user",
+          "content": [
+              {"type": "text", "text": f"Ты анализируешь карточки товаров двух категорий: наши карточки перые {len(message.product)} фотки и карточки конкурентов. Твоя задача — выявить ключевые отличия и тенденции. \nПроанализируй карточки конкурентов, чтобы понять, какие элементы чаще всего встречаются в их оформлении (например, типы изображений, структура текста, список характеристик) и чего нет в наших карточках. При анализе обращай внимание на:\nТипы изображений (основные, дополнительные, фото с размерами, фото товара в использовании). \nОсобенности текстов (заголовки, ключевые слова, уникальные описания, структура).\nХарактеристики (подробность, редкие параметры, акценты на экологичность, сертификации и т.д.).\nНа основе анализа сделай выводы:\nКакие элементы оформления есть у большинства конкурентов, но отсутствуют у нас?\nКакие общие тенденции наблюдаются в карточках конкурентов?\nПредложи, какие улучшения можно внести в наши карточки, чтобы они стали конкурентоспособными. Не передавай содержание карточек напрямую, только указывай общие наблюдения и выводы."},
+              {"type": "image"},
+            ],
+        },
+    ]
+
+    text = request_to_multymodal_V2(conversation=conversation, image= all_images)
+    print(text)
+
 def send_answer_to_fonts_analysis(success: bool, message:str, data: task_pb2.CheckFontsData):
     try:
         with grpc.insecure_channel(f"{os.getenv('GRPC_HOST')}:{os.getenv('GRPC_PORT')}") as channel:
@@ -203,52 +246,14 @@ def send_answer_to_quality_analysis(success: bool, message:str, data: task_pb2.C
         return
 
 def callback(ch, method, properties, body):
-    message = PhotoMessage(**json.loads(body))
-    if str(message.type) == 'text_optimization':
-        try:
-            send_answer_to_text_optimization(True, f"Success generate", task_pb2.CheckTextOptimizationData(
-                  id=message.id,
-                  value=analyze_photo_to_text_optimization(message)
-                  ))
-        except Exception as ex:
-            send_answer_to_text_optimization(False, f"Error generating reviews message: {ex}", task_pb2.CheckTextOptimizationData(
-                id=message.id,
-                value=[]
-                ))
-            print(f"Error {ex}")
-        finally:
-            ch.basic_ack(delivery_tag=method.delivery_tag)
-            return     
-    elif str(message.type) == 'quality_analysis':
-        try:
-            send_answer_to_quality_analysis(True, f"Success generate", task_pb2.CheckQualityData(
-                  id=message.id,
-                  value=analyze_photo_by_quality(message)
-                  ))
-        except Exception as ex:
-            send_answer_to_quality_analysis(False, f"Error generating description message: {ex}", task_pb2.CheckQualityData(
-                id=message.id,
-                value=[]
-                ))
-            print(f"Error {ex}")
-        finally:
-            ch.basic_ack(delivery_tag=method.delivery_tag)
-            return 
-    elif str(message.type) == 'fonts_analysis':
-        try:
-            send_answer_to_fonts_analysis(True, f"Success generate", task_pb2.CheckFontsData(
-                id=message.id,
-                value=analyze_photo_by_fonts(message)
-                ))
-        except Exception as ex:
-            send_answer_to_fonts_analysis(False, f"Error generating description message: {ex}", task_pb2.CheckFontsData(
-                id=message.id,
-                value=[]
-                ))
-            print(f"Error {ex}")
-        finally:
-            ch.basic_ack(delivery_tag=method.delivery_tag)
-            return 
+    
+    message = PhotoMessageV2(**json.loads(body))
+    try:
+        pass
+    
+    finally:
+        ch.basic_ack(delivery_tag=method.delivery_tag)
+        return 
     print("Done")
 
 
@@ -284,4 +289,5 @@ def start_seo_consumer():
             repit -= 1
 
 if __name__ == "__main__":
-    start_seo_consumer()
+    # start_seo_consumer()
+    pass

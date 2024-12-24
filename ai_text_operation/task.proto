@@ -91,6 +91,15 @@ message TaskShowResponse {
     string updatedAt = 7;
     string recommendedDescription = 8;
     string reviewsAnalysis = 9;
+    repeated PhotoAnalysisTaskShow photoAnalysis = 10;
+}
+
+message PhotoAnalysisTaskShow {
+    int64 ID = 1;
+    string PhotoURL = 2;
+    repeated string qualityAnalysis = 3;
+    repeated string fontsAnalysis = 4;
+    repeated string textOptimization = 5;
 }
 
 message TaskListResponse {
@@ -184,6 +193,39 @@ message UpdateTextOptimizationRequest {
     string message = 2;
     CheckTextOptimizationData data = 3;
 }
+
+message ReviewsAnalysisV2 {
+    int64 id = 1;
+    string value = 2;
+}
+
+message UpdateReviewsAnalysisV2Request {
+    bool success = 1;
+    string message = 2;
+    ReviewsAnalysisV2 data = 3;
+}
+
+message PhotoAnalysisV2 {
+    int64 id = 1;
+    string value = 2;
+}
+
+message UpdatePhotoAnalysisV2Request {
+    bool success = 1;
+    string message = 2;
+    PhotoAnalysisV2 data = 3;
+}
+
+message SEOAnalysisV2 {
+    int64 id = 1;
+    string value = 2;
+}
+
+message UpdateSEOAnalysisV2Request {
+    bool success = 1;
+    string message = 2;
+    SEOAnalysisV2 data = 3;
+}
   
 service TaskService {
     rpc List (TaskListRequest) returns (TaskListResponse);
@@ -197,4 +239,8 @@ service TaskService {
     rpc UpdateFontsAnalysis (UpdateFontsAnalysisRequest) returns (google.protobuf.Empty);
     rpc UpdateQuanlityAnalysis (UpdateQualityAnalysisRequest) returns (google.protobuf.Empty);
     rpc UpdateTextOptimization (UpdateTextOptimizationRequest) returns (google.protobuf.Empty);
+
+    rpc UpdateReviewsAnalysisV2 (UpdateReviewsAnalysisV2Request) returns (google.protobuf.Empty);
+    rpc UpdatePhotoAnalysisV2 (UpdatePhotoAnalysisV2Request) returns (google.protobuf.Empty);
+    rpc UpdateSEOAnalysisV2 (UpdateSEOAnalysisV2Request) returns (google.protobuf.Empty);
 }
