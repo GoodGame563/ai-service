@@ -413,6 +413,7 @@ def send_answer_to_reviews_v2(success: bool, message:str, data: task_pb2.Reviews
 
 def callback(ch, method, properties, body):
     raw_type_message = json.loads(body)
+    print(raw_type_message['type'])
     if str(raw_type_message['type']) == 'reviews':
         try:
             message = ReviewsMessageV2(**json.loads(body))
