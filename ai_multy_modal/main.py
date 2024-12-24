@@ -73,7 +73,7 @@ def request_to_multymodal_V2(conversation: list, image:list[ImageFile]):
 
     inputs = processor(images=image, text=prompt, return_tensors="pt").to(model.device)
 
-    output = model.generate(**inputs, max_new_tokens=800,  temperature=0.7, do_sample=True).cpu()
+    output = model.generate(**inputs, max_new_tokens=800,  temperature=0.7, do_sample=True)
 
     return(str(processor.decode(output[0], skip_special_tokens=True)).split("assistant")[1])
 
@@ -183,18 +183,14 @@ def analyze_all(message: PhotoMessageV2):
     message.product = message.product[:1]
     count_img += len(message.product)
     for i in message.product:
-        response = requests.get(i, timeout=3)
-        response.raise_for_status()
-        all_images.append(Image.open(BytesIO(response.content)).convert('RGB').resize((500, 500), Image.LANCZOS))
+        all_images.append(Image.open(requests.get(i, timeout=3, stream=True).raw))
     message.competitors = message.competitors[0:1]
     for m in message.competitors:
         m = m[:1]
         count_img += len(m)
         print(len(m))
         for i in m:
-            response = requests.get(i, timeout=3)
-            response.raise_for_status()
-            all_images.append(Image.open(BytesIO(response.content)).convert('RGB').resize((500, 500), Image.LANCZOS))
+            all_images.append(Image.open(requests.get(i, timeout=3, stream=True).raw))
     print(count_img)
 
     conversation = [
