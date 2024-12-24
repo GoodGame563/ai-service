@@ -415,6 +415,7 @@ def callback(ch, method, properties, body):
     print(str(raw_type_message['type']) == 'reviews')
     if str(raw_type_message['type']) == 'reviews':
         # try:
+            print(json.loads(body))
             message = ReviewsMessageV2(**json.loads(body))
             
             result = generate_by_reviews_v2(message)
