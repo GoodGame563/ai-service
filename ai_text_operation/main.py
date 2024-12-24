@@ -301,7 +301,9 @@ def generate_by_reviews_v2(reviews:ReviewsMessageV2) -> str:
     r_reviews = request.text
     prompt += f"\n Наши отзывы{r_reviews}"
     for r in reviews.competitors:
-        r_r = requests.get(r.reviews_url).text
+        request = requests.get(r.reviews_url)
+        print(request)
+        r_r = request.text
         prompt += f"Название конкурентов {r.name}\nОтзывы конкурентов {r_r}"
 
 
