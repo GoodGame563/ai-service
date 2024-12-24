@@ -249,12 +249,12 @@ def send_answer_to_quality_analysis(success: bool, message:str, data: task_pb2.C
 def callback(ch, method, properties, body):
     
     message = PhotoMessageV2(**json.loads(body))
-    try:
-        analyze_all(message)
+    # try:
+    analyze_all(message)
     
-    finally:
-        ch.basic_ack(delivery_tag=method.delivery_tag)
-        return 
+    # finally:
+    #     ch.basic_ack(delivery_tag=method.delivery_tag)
+    #     return 
     print("Done")
 
 
