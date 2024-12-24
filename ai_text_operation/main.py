@@ -259,8 +259,8 @@ def generate_new_text_with_concurent_text(main_element:SeoProductItem, elements:
         output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
     ]
     final = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
-    print("анализ описания")
-    print(final)
+    # print("анализ описания")
+    # print(final)
     return final
 
 def generate_by_reviews(reviews:list[str]) -> str:
@@ -352,8 +352,8 @@ def generate_by_reviews_v2(reviews:ReviewsMessageV2) -> str:
         output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
     ]
     final = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
-    print("анализ отзывов")
-    print(final)
+    # print("анализ отзывов")
+    # print(final)
     return final
 def send_answer_to_description(success: bool, message:str, data: task_pb2.CheckDescriptionData):
     try:
@@ -413,10 +413,9 @@ def send_answer_to_reviews_v2(success: bool, message:str, data: task_pb2.Reviews
 
 def callback(ch, method, properties, body):
     raw_type_message = json.loads(body)
-    print(str(raw_type_message['type']) == 'reviews')
     if str(raw_type_message['type']) == 'reviews':
-        # try:
-            print(json.loads(body))
+        try:
+            # print(json.loads(body))
             message = ReviewsMessageV2(**json.loads(body))
             
             result = generate_by_reviews_v2(message)
@@ -424,14 +423,14 @@ def callback(ch, method, properties, body):
                 id=message.id,
                 value=result
                 ))
-        # except Exception as ex:
-        #     send_answer_to_reviews_v2(False, f"Error generating reviews message: {ex}", task_pb2.ReviewsAnalysisV2(
-        #         id=message.id,
-        #         value=""
-        #         ))
-        # finally:
-        #     ch.basic_ack(delivery_tag=method.delivery_tag)
-        #     return 
+        except Exception as ex:
+            send_answer_to_reviews_v2(False, f"Error generating reviews message: {ex}", task_pb2.ReviewsAnalysisV2(
+                id=message.id,
+                value=""
+                ))
+        finally:
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+            return 
     elif str(raw_type_message['type']) == 'seo':
         try:
             message = SEOMessageV2(**json.loads(body))
