@@ -192,7 +192,7 @@ def analyze_all(message: PhotoMessageV2):
                 ],
             },
         ]
-        text = request_to_multymodal_V2(conversation=conversation, image= image, tokens=600)
+        text = request_to_multymodal_V2(conversation=conversation, image= image, tokens=800)
         print(text)
     # message.competitors = message.competitors[0:1]
     # for m in message.competitors:
