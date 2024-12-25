@@ -178,11 +178,10 @@ def analyze_photo_to_text_optimization(message: PhotoMessage):
     return result
 
 def analyze_all(message: PhotoMessageV2):
-    count_img = 0
-    count_img += len(message.product)
+    promt = "Насколько четко изображен товар? Видны ли его ключевые характеристики и детали, такие как материал, текстура, форма или функциональные элементы? Привлекает ли внимание композиция фотографии? Если это товар для использования (например, техника, мебель или одежда), видно ли, как он применяется на практике? Указаны ли на фото особенности товара, которые могут быть важны для клиента (например, габариты, материал, инновационные функции, комплектация)?"
+    final_text = "Результаты анализа наших фотографий "
     for i in message.product:
         image = Image.open(requests.get(i, timeout=3, stream=True).raw)
-        promt = "Насколько четко изображен товар? Видны ли его ключевые характеристики и детали, такие как материал, текстура, форма или функциональные элементы? Привлекает ли внимание композиция фотографии? Если это товар для использования (например, техника, мебель или одежда), видно ли, как он применяется на практике? Указаны ли на фото особенности товара, которые могут быть важны для клиента (например, габариты, материал, инновационные функции, комплектация)?"
         conversation = [
             {
             "role": "user",
@@ -193,29 +192,27 @@ def analyze_all(message: PhotoMessageV2):
             },
         ]
         text = request_to_multymodal_V2(conversation=conversation, image= image, tokens=900)
-        print(text)
-    # message.competitors = message.competitors[0:1]
-    # for m in message.competitors:
-    #     m = m[:1]
-    #     count_img += len(m)
-    #     print(len(m))
-    #     for i in m:
-    #         all_images.append(Image.open(requests.get(i, timeout=3, stream=True).raw))
-    # print(count_img)
-
-    # conversation = [
-    #     {
-    #       "role": "user",
-    #       "content": [
-    #           {"type": "text", "text": f"Ты анализируешь карточки товаров двух категорий: наши карточки перые {len(message.product)} фотки и карточки конкурентов. Твоя задача — выявить ключевые отличия и тенденции. \nПроанализируй карточки конкурентов, чтобы понять, какие элементы чаще всего встречаются в их оформлении (например, типы изображений, структура текста, список характеристик) и чего нет в наших карточках. При анализе обращай внимание на:\nТипы изображений (основные, дополнительные, фото с размерами, фото товара в использовании). \nОсобенности текстов (заголовки, ключевые слова, уникальные описания, структура).\nХарактеристики (подробность, редкие параметры, акценты на экологичность, сертификации и т.д.).\nНа основе анализа сделай выводы:\nКакие элементы оформления есть у большинства конкурентов, но отсутствуют у нас?\nКакие общие тенденции наблюдаются в карточках конкурентов?\nПредложи, какие улучшения можно внести в наши карточки, чтобы они стали конкурентоспособными. Не передавай содержание карточек напрямую, только указывай общие наблюдения и выводы."},
-    #           {"type": "image"},
-    #         ],
-    #     },
-    # ]
-
-    # text = request_to_multymodal_V2(conversation=conversation, image= all_images)
-    # print(text)
-    return text
+        final_text += text
+    conc = 1
+    for m in message.competitors:
+       
+        final_text += f"\n\n Результаты анализа нашего {conc} конкурента"
+        for i in m:
+            image = Image.open(requests.get(i, timeout=3, stream=True).raw)
+            conversation = [
+                {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": promt},
+                    {"type": "image"},
+                    ],
+                },
+            ]
+            text = request_to_multymodal_V2(conversation=conversation, image= image, tokens=900)
+            final_text += text
+        conc += 1
+    print(final_text)
+    return final_text
 
 def send_answer_to_fonts_analysis(success: bool, message:str, data: task_pb2.CheckFontsData):
     try:
