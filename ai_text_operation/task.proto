@@ -92,6 +92,9 @@ message TaskShowResponse {
     string recommendedDescription = 8;
     string reviewsAnalysis = 9;
     repeated PhotoAnalysisTaskShow photoAnalysis = 10;
+    string reviewsAnalysisV2 = 11;
+    string seoAnalysisV2 = 12;
+    string photoAnalysisV2 = 13;
 }
 
 message PhotoAnalysisTaskShow {
@@ -226,6 +229,18 @@ message UpdateSEOAnalysisV2Request {
     string message = 2;
     SEOAnalysisV2 data = 3;
 }
+
+message PhotoAnalysisV3 {
+    int64 id = 1;
+    repeated string ourPhotos = 2;
+    repeated string competitorPhotos = 3;
+}
+
+message UpdatePhotoAnalysisV3Request {
+    bool success = 1;
+    string message = 2;
+    PhotoAnalysisV3 data = 3;
+}
   
 service TaskService {
     rpc List (TaskListRequest) returns (TaskListResponse);
@@ -243,4 +258,6 @@ service TaskService {
     rpc UpdateReviewsAnalysisV2 (UpdateReviewsAnalysisV2Request) returns (google.protobuf.Empty);
     rpc UpdatePhotoAnalysisV2 (UpdatePhotoAnalysisV2Request) returns (google.protobuf.Empty);
     rpc UpdateSEOAnalysisV2 (UpdateSEOAnalysisV2Request) returns (google.protobuf.Empty);
+
+    rpc UpdatePhotoAnalysisV3 (UpdatePhotoAnalysisV3Request) returns (google.protobuf.Empty);
 }

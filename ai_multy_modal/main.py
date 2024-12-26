@@ -179,7 +179,7 @@ def analyze_photo_to_text_optimization(message: PhotoMessage):
 
 def analyze_all(message: PhotoMessageV2):
     promt = "Насколько четко изображен товар? Видны ли его ключевые характеристики и детали, такие как материал, текстура, форма или функциональные элементы? Привлекает ли внимание композиция фотографии? Если это товар для использования (например, техника, мебель или одежда), видно ли, как он применяется на практике? Указаны ли на фото особенности товара, которые могут быть важны для клиента (например, габариты, материал, инновационные функции, комплектация)?"
-    final_text = "Результаты анализа наших фотографий "
+    our_photos = []
     for i in message.product:
         image = Image.open(requests.get(i, timeout=3, stream=True).raw)
         conversation = [
@@ -192,11 +192,9 @@ def analyze_all(message: PhotoMessageV2):
             },
         ]
         text = request_to_multymodal_V2(conversation=conversation, image= image, tokens=900)
-        final_text += text
-    conc = 1
+        our_photos.append(text)
+    competitor_photos = []
     for m in message.competitors:
-       
-        final_text += f"\n\n Результаты анализа нашего {conc} конкурента"
         for i in m:
             image = Image.open(requests.get(i, timeout=3, stream=True).raw)
             conversation = [
@@ -209,10 +207,11 @@ def analyze_all(message: PhotoMessageV2):
                 },
             ]
             text = request_to_multymodal_V2(conversation=conversation, image= image, tokens=900)
-            final_text += text
-        conc += 1
-    print(final_text)
-    return final_text
+            
+            competitor_photos.append(text)
+
+
+    return (our_photos, competitor_photos)
 
 def send_answer_to_fonts_analysis(success: bool, message:str, data: task_pb2.CheckFontsData):
     try:
@@ -256,16 +255,38 @@ def send_answer_to_quality_analysis(success: bool, message:str, data: task_pb2.C
         print(f"Error: {e}")
         return
 
+def send_answer_to_analyze_all(success: bool, message:str, data: task_pb2.PhotoAnalysisV3):
+    try:
+        with grpc.insecure_channel(f"{os.getenv('GRPC_HOST')}:{os.getenv('GRPC_PORT')}") as channel:
+            stub = task_pb2_grpc.TaskServiceStub(channel)
+            request = task_pb2.UpdatePhotoAnalysisV3Request(
+                success=success,
+                message=message,
+                data=data
+            )
+            stub.UpdatePhotoAnalysisV3(request)
+    except Exception as e:
+        print(f"Error: {e}")
+        return
+
 def callback(ch, method, properties, body):
-    print(body)
     message = PhotoMessageV2(**json.loads(body))
-    # try:
-    analyze_all(message)
-    
-    # finally:
-    #     ch.basic_ack(delivery_tag=method.delivery_tag)
-    #     return 
-    print("Done")
+    try:
+        data = analyze_all(message)
+        send_answer_to_analyze_all(True, "success generate",  task_pb2.PhotoAnalysisV3(
+                id=message.id,
+                ourPhotos=data[0],
+                competitorPhotos=data[1],
+                ))
+    except Exception as e:
+        send_answer_to_analyze_all(False, str(e), task_pb2.PhotoAnalysisV3(
+                id=message.id,
+                ourPhotos=[],
+                competitorPhotos=[],
+                ))
+        print(f"Error analyze: {e}")
+    finally:
+        ch.basic_ack(delivery_tag=method.delivery_tag)
 
 
 def start_seo_consumer():

@@ -20,6 +20,11 @@ import json
 
 
 load_dotenv()
+class PhotoReport(BaseModel):
+    id: int 
+    type: str
+    our_photos: list[str]
+    competitor_photos: list[str]
 
 class ReviewsProductItemV2(BaseModel):
     name: str
@@ -189,6 +194,36 @@ def generate_new_text_with_seo_words_v1(main_element:Product, elements:list[Prod
     final = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
     return final
 
+def generate_photo_analysis(products: PhotoReport) -> str:
+    prompt = f"Данные для анализа:\n\n1. Наш товар:\n- Описание фоток: "
+    for product in products.our_photos:
+        prompt += product + "\n"
+    prompt += "Описание фоток конкурента: "
+    for element in  products.competitor_photos:
+        prompt += element + "\n"
+    messages = [
+        { "content": "Ты аналитик, специализирующийся на визуальных аспектах маркетинга. Твоя задача — анализировать текстовые описания фотографии товаров, выявлять ключевые отличия между текстовыми описаниями фотографий конкурентов и текстовыми описаниями фотографий нашего товара, а также предлагать улучшения, даже если явных отличий нет."},
+        {"role": "user", "content": prompt}
+    ]
+    text = tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=True
+    )
+    model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
+
+    generated_ids = model.generate(
+        **model_inputs,
+        temperature=0.9,
+        max_new_tokens=8096
+    )
+    generated_ids = [
+        output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
+    ]
+    final = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+    # print("анализ описания")
+    # print(final)
+    return final
 
 def generate_new_text_with_seo_words_v2(main_element:Product, elements:list[Product]) -> str:
     prompt = f"Прочитай описание нашего товара и список ключевых слов:\nНаше описание: {main_element.description}\nНаши ключевые слова: {[word.raw_keyword for word in main_element.seo]}\nПрочитай описание и ключевые слова конкурентов (без упоминания их брендов):"
@@ -413,6 +448,19 @@ def send_answer_to_reviews_v2(success: bool, message:str, data: task_pb2.Reviews
         print(f"Error connecting to gRPC server: {e}")
         return
 
+def send_answer_to_analys_all(success: bool, message:str, data: task_pb2.PhotoAnalysisV2):
+    try:
+        with grpc.insecure_channel(f"{os.getenv('GRPC_HOST')}:{os.getenv('GRPC_PORT')}") as channel:
+            stub = task_pb2_grpc.TaskServiceStub(channel)
+            request = task_pb2.UpdatePhotoAnalysisV2Request(
+                success=success,
+                message=message,
+                data=data
+            )
+            stub.UpdatePhotoAnalysisV2(request)
+    except grpc.RpcError as e:
+        print(f"Error connecting to gRPC server: {e}")
+        return
 def callback(ch, method, properties, body):
     raw_type_message = json.loads(body)
     if str(raw_type_message['type']) == 'reviews':
@@ -449,49 +497,22 @@ def callback(ch, method, properties, body):
         finally:
             ch.basic_ack(delivery_tag=method.delivery_tag)
             return 
-
-    # if str(raw_type_message['type']) == 'reviews':
-    #     try:
-    #         message = ReviewsMessage(**json.loads(body))
-    #         result = generate_by_reviews(message.reviews)
-    #         send_answer_to_reviews(True, "All reviews processed", task_pb2.CheckReviewsData(
-    #             id=message.id,
-    #             value=result
-    #             ))
-    #     except Exception as ex:
-    #         send_answer_to_reviews(False, f"Error generating reviews message: {ex}", task_pb2.CheckReviewsData(
-    #             id=message.id,
-    #             value=""
-    #             ))
-    #         print(f"Error {ex}")
-    #     finally:
-    #         ch.basic_ack(delivery_tag=method.delivery_tag)
-    #         return
-        
-    # elif str(raw_type_message['type']) == 'seo_v1' or str(raw_type_message['type']) == 'seo_v2':
-        # try:
-        #     message = SeoMessage(**json.loads(body))
-        #     result = ""
-        #     if message.type == 'seo_v1':
-        #         result = generate_new_text_with_seo_words_v1(message.product, message.competitors)
-        #     else:
-        #         result = generate_new_text_with_seo_words_v2(message.product, message.competitors)
-
-        #     send_answer_to_description(True, "Description processed",task_pb2.CheckDescriptionData(
-        #         id=message.id,
-        #         value=result
-        #         ))
-        # except Exception as ex:
-        #     send_answer_to_description(False, f"Error generating description message: {ex}", task_pb2.CheckDescriptionData(
-        #         id=message.id,
-        #         value=""
-        #         ))
-        #     print(f"Error {ex}")
-        # finally:
-        #     ch.basic_ack(delivery_tag=method.delivery_tag)
-        #     return   
-    print("Done")
-
+    elif str(raw_type_message['type']) == 'photo_report':
+        try:
+            message = PhotoReport(**json.loads(body))
+            result = generate_photo_analysis(message)
+            send_answer_to_description_v2(True,  f"Success", task_pb2.SEOAnalysisV2(
+                id=message.id,
+                value=result
+                ))
+        except Exception as ex:
+            send_answer_to_description_v2(False, f"Error generating reviews message: {ex}", task_pb2.SEOAnalysisV2(
+                id=message.id,
+                value=""
+                ))
+        finally:
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+            return 
 
 def start_seo_consumer():
     repit = 5
