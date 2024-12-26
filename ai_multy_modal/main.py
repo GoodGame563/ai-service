@@ -178,9 +178,10 @@ def analyze_photo_to_text_optimization(message: PhotoMessage):
     return result
 
 def analyze_all(message: PhotoMessageV2):
+    from tqdm import tqdm
     promt = "Насколько четко изображен товар? Видны ли его ключевые характеристики и детали, такие как материал, текстура, форма или функциональные элементы? Привлекает ли внимание композиция фотографии? Если это товар для использования (например, техника, мебель или одежда), видно ли, как он применяется на практике? Указаны ли на фото особенности товара, которые могут быть важны для клиента (например, габариты, материал, инновационные функции, комплектация)?"
     our_photos = []
-    for i in message.product:
+    for i in tqdm(message.product):
         image = Image.open(requests.get(i, timeout=3, stream=True).raw)
         conversation = [
             {
@@ -194,7 +195,7 @@ def analyze_all(message: PhotoMessageV2):
         text = request_to_multymodal_V2(conversation=conversation, image= image, tokens=900)
         our_photos.append(text)
     competitor_photos = []
-    for m in message.competitors:
+    for m in tqdm(message.competitors):
         for i in m:
             image = Image.open(requests.get(i, timeout=3, stream=True).raw)
             conversation = [
