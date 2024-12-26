@@ -273,22 +273,22 @@ def send_answer_to_analyze_all(success: bool, message:str, data: task_pb2.PhotoA
 
 def callback(ch, method, properties, body):
     message = PhotoMessageV2(**json.loads(body))
-    # try:
-    data = analyze_all(message)
-    send_answer_to_analyze_all(True, "success generate",  task_pb2.PhotoAnalysisV3(
-            id=message.id,
-            ourPhotos=data[0],
-            competitorPhotos=data[1],
-            ))
-    # except Exception as e:
-    #     send_answer_to_analyze_all(False, str(e), task_pb2.PhotoAnalysisV3(
-    #             id=message.id,
-    #             ourPhotos=[],
-    #             competitorPhotos=[],
-    #             ))
-    #     print(f"Error analyze: {e}")
-    # finally:
-    #     ch.basic_ack(delivery_tag=method.delivery_tag)
+    try:
+        data = analyze_all(message)
+        send_answer_to_analyze_all(True, "success generate",  task_pb2.PhotoAnalysisV3(
+                id=message.id,
+                ourPhotos=data[0],
+                competitorPhotos=data[1],
+                ))
+    except Exception as e:
+        send_answer_to_analyze_all(False, str(e), task_pb2.PhotoAnalysisV3(
+                id=message.id,
+                ourPhotos=[],
+                competitorPhotos=[],
+                ))
+        print(f"Error analyze: {e}")
+    finally:
+        ch.basic_ack(delivery_tag=method.delivery_tag)
 
 
 def start_seo_consumer():
