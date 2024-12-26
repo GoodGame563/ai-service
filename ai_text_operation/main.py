@@ -498,21 +498,21 @@ def callback(ch, method, properties, body):
             ch.basic_ack(delivery_tag=method.delivery_tag)
             return 
     elif str(raw_type_message['type']) == 'photo_report':
-        try:
+        # try:
             message = PhotoReport(**json.loads(body))
             result = generate_photo_analysis(message)
             send_answer_to_description_v2(True,  f"Success", task_pb2.SEOAnalysisV2(
                 id=message.id,
                 value=result
                 ))
-        except Exception as ex:
-            send_answer_to_description_v2(False, f"Error generating reviews message: {ex}", task_pb2.SEOAnalysisV2(
-                id=message.id,
-                value=""
-                ))
-        finally:
-            ch.basic_ack(delivery_tag=method.delivery_tag)
-            return 
+        # except Exception as ex:
+        #     send_answer_to_description_v2(False, f"Error generating reviews message: {ex}", task_pb2.SEOAnalysisV2(
+        #         id=message.id,
+        #         value=""
+        #         ))
+        # finally:
+        #     ch.basic_ack(delivery_tag=method.delivery_tag)
+        #     return 
 
 def start_seo_consumer():
     repit = 5
