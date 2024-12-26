@@ -295,7 +295,7 @@ def start_seo_consumer():
     # while True:
     #     try:
     credentials = pika.PlainCredentials(os.getenv('RABBITMQ_LOGIN'), os.getenv('RABBITMQ_PASSWORD'))
-    connection = pika.BlockingConnection(pika.ConnectionParameters(os.getenv('RABBITMQ_HOST'), os.getenv('RABBITMQ_PORT'), credentials=credentials))
+    connection = pika.BlockingConnection(pika.ConnectionParameters(os.getenv('RABBITMQ_HOST'), os.getenv('RABBITMQ_PORT'), credentials=credentials,  heartbeat=6000000))
     queue_name = 'photo_queue_v2'
     channel = connection.channel()
     channel.basic_qos(prefetch_count=1)
