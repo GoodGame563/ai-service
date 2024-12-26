@@ -292,34 +292,34 @@ def callback(ch, method, properties, body):
 
 def start_seo_consumer():
     repit = 5
-    while True:
-        try:
-            credentials = pika.PlainCredentials(os.getenv('RABBITMQ_LOGIN'), os.getenv('RABBITMQ_PASSWORD'))
-            connection = pika.BlockingConnection(pika.ConnectionParameters(os.getenv('RABBITMQ_HOST'), os.getenv('RABBITMQ_PORT'), credentials=credentials))
-            queue_name = 'photo_queue_v2'
-            channel = connection.channel()
-            channel.basic_qos(prefetch_count=1)
+    # while True:
+    #     try:
+    credentials = pika.PlainCredentials(os.getenv('RABBITMQ_LOGIN'), os.getenv('RABBITMQ_PASSWORD'))
+    connection = pika.BlockingConnection(pika.ConnectionParameters(os.getenv('RABBITMQ_HOST'), os.getenv('RABBITMQ_PORT'), credentials=credentials))
+    queue_name = 'photo_queue_v2'
+    channel = connection.channel()
+    channel.basic_qos(prefetch_count=1)
 
-            channel.exchange_declare(exchange=queue_name, exchange_type='direct', durable=False)
-            channel.queue_declare(queue=queue_name, passive=True)
+    channel.exchange_declare(exchange=queue_name, exchange_type='direct', durable=False)
+    channel.queue_declare(queue=queue_name, passive=True)
 
-            channel.basic_consume(
-                queue=queue_name,
-                on_message_callback=callback,
-                auto_ack=False 
-            )
-            print("Definition photo consumer waiting for messages...")
-            repit = 5
-            channel.start_consuming()
+    channel.basic_consume(
+        queue=queue_name,
+        on_message_callback=callback,
+        auto_ack=False 
+    )
+    print("Definition photo consumer waiting for messages...")
+    repit = 5
+    channel.start_consuming()
             
 
-        except Exception as ex:
-            print(f"Error starting consumer: {ex}")
-            if repit == 0: 
-                break
-            print(f"Засыпаю на {1800/repit/60} минут")
-            time.sleep(1800/repit)
-            repit -= 1
+        # except Exception as ex:
+        #     print(f"Error starting consumer: {ex}")
+        #     if repit == 0: 
+        #         break
+        #     print(f"Засыпаю на {1800/repit/60} минут")
+        #     time.sleep(1800/repit)
+        #     repit -= 1
 
 if __name__ == "__main__":
     start_seo_consumer()
