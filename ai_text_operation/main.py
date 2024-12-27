@@ -390,7 +390,7 @@ def generate_by_reviews_v2(reviews:ReviewsMessageV2) -> str:
     # print("анализ отзывов")
     # print(final)
     return final
-    
+
 def send_answer_to_description(success: bool, message:str, data: task_pb2.CheckDescriptionData):
     try:
         with grpc.insecure_channel(f"{os.getenv('GRPC_HOST')}:{os.getenv('GRPC_PORT')}") as channel:
@@ -518,7 +518,7 @@ def start_seo_consumer():
     while True:
         try:
             credentials = pika.PlainCredentials(os.getenv('RABBITMQ_LOGIN'), os.getenv('RABBITMQ_PASSWORD'))
-            connection = pika.BlockingConnection(pika.ConnectionParameters(os.getenv('RABBITMQ_HOST'), os.getenv('RABBITMQ_PORT'), credentials=credentials))
+            connection = pika.BlockingConnection(pika.ConnectionParameters(os.getenv('RABBITMQ_HOST'), os.getenv('RABBITMQ_PORT'), credentials=credentials,  heartbeat=60000))
             queue_name = 'seo_queue_v2'
             channel = connection.channel()
             channel.basic_qos(prefetch_count=1)
