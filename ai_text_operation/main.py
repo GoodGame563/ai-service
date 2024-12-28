@@ -202,7 +202,7 @@ def generate_photo_analysis(products: PhotoReport) -> str:
     for element in  products.competitor_photos:
         prompt += element + "\n"
     messages = [
-        { "content": "Ты аналитик. Твоя задача — анализировать текстовые описания фотографии товаров, выявлять ключевые отличия между текстовыми описаниями фотографий конкурентов и текстовыми описаниями фотографий нашего товара, а также предлагать улучшения, даже если явных отличий нет."},
+        { "content": "Ты аналитик. Твоя задача — анализировать текстовые описания, выявлять ключевые отличия между текстовыми описаниями конкурентов и текстовыми описаниями нашего товара, а также предлагать улучшения, даже если явных отличий нет."},
         {"role": "user", "content": prompt}
     ]
     text = tokenizer.apply_chat_template(
@@ -463,8 +463,8 @@ def send_answer_to_analys_all(success: bool, message:str, data: task_pb2.PhotoAn
 def callback(ch, method, properties, body):
     raw_type_message = json.loads(body)
     if str(raw_type_message['type']) == 'reviews':
-        # try:
-            # print(json.loads(body))
+        try:
+            print(json.loads(body))
             message = ReviewsMessageV2(**json.loads(body))
             
             result = generate_by_reviews_v2(message)
@@ -472,14 +472,14 @@ def callback(ch, method, properties, body):
                 id=message.id,
                 value=result
                 ))
-        # except Exception as ex:
-        #     send_answer_to_reviews_v2(False, f"Error generating reviews message: {ex}", task_pb2.ReviewsAnalysisV2(
-        #         id=message.id,
-        #         value=""
-        #         ))
-        # finally:
-        #     ch.basic_ack(delivery_tag=method.delivery_tag)
-        #     return 
+        except Exception as ex:
+            send_answer_to_reviews_v2(False, f"Error generating reviews message: {ex}", task_pb2.ReviewsAnalysisV2(
+                id=message.id,
+                value=""
+                ))
+        finally:
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+            return 
     elif str(raw_type_message['type']) == 'seo':
         try:
             message = SEOMessageV2(**json.loads(body))
@@ -504,6 +504,7 @@ def callback(ch, method, properties, body):
                 id=message.id,
                 value=result
                 ))
+            print (result)
         # except Exception as ex:
         #     send_answer_to_description_v2(False, f"Error generating reviews message: {ex}", task_pb2.SEOAnalysisV2(
         #         id=message.id,
