@@ -196,8 +196,7 @@ def analyze_all(message: PhotoMessageV2):
         our_photos.append(text)
     competitor_photos = []
     for m in tqdm(message.competitors):
-        m = m[0:2]
-        for i in m:
+        for i in tqdm(m):
             image = Image.open(requests.get(i, timeout=3, stream=True).raw)
             conversation = [
                 {
