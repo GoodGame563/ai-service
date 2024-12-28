@@ -202,7 +202,7 @@ def generate_photo_analysis(products: PhotoReport) -> str:
     for element in  products.competitor_photos:
         prompt += element + "\n"
     messages = [
-        { "content": "Ты аналитик. Твоя задача — анализировать текстовые описания, выявлять ключевые отличия между текстовыми описаниями конкурентов и текстовыми описаниями нашего товара, а также предлагать улучшения, даже если явных отличий нет."},
+        { "content": "Ты аналитик. Твоя задача — анализировать текстовые описания, выявлять ключевые отличия между текстовыми описаниями конкурентов и текстовыми описаниями нашего товара, а также предлагать улучшения, на основе того что не хватает у нас посравнению с конкурентами, даже если явных отличий нет."},
         {"role": "user", "content": prompt}
     ]
     text = tokenizer.apply_chat_template(
@@ -215,7 +215,7 @@ def generate_photo_analysis(products: PhotoReport) -> str:
     generated_ids = model.generate(
         **model_inputs,
         temperature=0.9,
-        max_new_tokens=8096
+        max_new_tokens=6096
     )
     generated_ids = [
         output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
@@ -497,7 +497,7 @@ def callback(ch, method, properties, body):
             ch.basic_ack(delivery_tag=method.delivery_tag)
             return 
     elif str(raw_type_message['type']) == 'photo_report':
-        # try:
+        try:
             message = PhotoReport(**json.loads(body))
             result = generate_photo_analysis(message)
             send_answer_to_analys_all(True,  f"Success", task_pb2.PhotoAnalysisV2(
@@ -505,14 +505,14 @@ def callback(ch, method, properties, body):
                 value=result
                 ))
             print (result)
-        # except Exception as ex:
-        #     send_answer_to_description_v2(False, f"Error generating reviews message: {ex}", task_pb2.SEOAnalysisV2(
-        #         id=message.id,
-        #         value=""
-        #         ))
-        # finally:
-        #     ch.basic_ack(delivery_tag=method.delivery_tag)
-        #     return 
+        except Exception as ex:
+            send_answer_to_description_v2(False, f"Error generating reviews message: {ex}", task_pb2.SEOAnalysisV2(
+                id=message.id,
+                value=""
+                ))
+        finally:
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+            return 
 
 def start_seo_consumer():
     repit = 5
