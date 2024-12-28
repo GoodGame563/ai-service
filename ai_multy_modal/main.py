@@ -192,7 +192,7 @@ def analyze_all(message: PhotoMessageV2):
                 ],
             },
         ]
-        text = request_to_multymodal_V2(conversation=conversation, image= image, tokens=300)
+        text = request_to_multymodal_V2(conversation=conversation, image= image, tokens=400)
         our_photos.append(text)
         print(text)
     competitor_photos = []
@@ -208,7 +208,7 @@ def analyze_all(message: PhotoMessageV2):
                     ],
                 },
             ]
-            text = request_to_multymodal_V2(conversation=conversation, image= image, tokens=300)
+            text = request_to_multymodal_V2(conversation=conversation, image= image, tokens=400)
             print(text)
             competitor_photos.append(text)
 
