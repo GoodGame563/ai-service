@@ -192,8 +192,9 @@ def analyze_all(message: PhotoMessageV2):
                 ],
             },
         ]
-        text = request_to_multymodal_V2(conversation=conversation, image= image, tokens=800)
+        text = request_to_multymodal_V2(conversation=conversation, image= image, tokens=300)
         our_photos.append(text)
+        print(text)
     competitor_photos = []
     for m in tqdm(message.competitors):
         for i in tqdm(m):
@@ -207,8 +208,8 @@ def analyze_all(message: PhotoMessageV2):
                     ],
                 },
             ]
-            text = request_to_multymodal_V2(conversation=conversation, image= image, tokens=800)
-            
+            text = request_to_multymodal_V2(conversation=conversation, image= image, tokens=300)
+            print(text)
             competitor_photos.append(text)
 
     
