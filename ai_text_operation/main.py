@@ -224,7 +224,7 @@ def generate_photo_analysis(products: PhotoReport) -> str:
     ]
     final = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
     # print("анализ описания")
-    # print(final)
+    print(final)
     return final
 
 def generate_new_text_with_seo_words_v2(main_element:Product, elements:list[Product]) -> str:
