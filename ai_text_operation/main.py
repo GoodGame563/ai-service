@@ -197,10 +197,10 @@ def generate_new_text_with_seo_words_v1(main_element:Product, elements:list[Prod
 def generate_photo_analysis(products: PhotoReport) -> str:
     print (products.our_photos)
     print (products.competitor_photos)
-    prompt = f"Данные для анализа:\n\n1. Наш товар:\n- Описание фоток: "
+    prompt = f"Данные для анализа:\n\n1. Наш товар:\n- Описание наше: "
     for product in products.our_photos:
         prompt += product + "\n"
-    prompt += "Описание фоток конкурента: "
+    prompt += "Описание конкурента: "
     for element in  products.competitor_photos:
         prompt += element + "\n"
     messages = [
