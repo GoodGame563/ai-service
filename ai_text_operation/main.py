@@ -195,6 +195,8 @@ def generate_new_text_with_seo_words_v1(main_element:Product, elements:list[Prod
     return final
 
 def generate_photo_analysis(products: PhotoReport) -> str:
+    print (products.our_photos)
+    print (products.competitor_photos)
     prompt = f"Данные для анализа:\n\n1. Наш товар:\n- Описание фоток: "
     for product in products.our_photos:
         prompt += product + "\n"
@@ -386,6 +388,7 @@ def generate_by_reviews_v2(reviews:ReviewsMessageV2) -> str:
         generated_ids = [
             output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
         ]
+        final += "Анализ"
         final += tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
     # print("анализ отзывов")
     # print(final)

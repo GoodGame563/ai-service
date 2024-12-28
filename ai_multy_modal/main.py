@@ -192,7 +192,7 @@ def analyze_all(message: PhotoMessageV2):
                 ],
             },
         ]
-        text = request_to_multymodal_V2(conversation=conversation, image= image, tokens=500)
+        text = request_to_multymodal_V2(conversation=conversation, image= image, tokens=800)
         our_photos.append(text)
     competitor_photos = []
     for m in tqdm(message.competitors):
@@ -207,11 +207,11 @@ def analyze_all(message: PhotoMessageV2):
                     ],
                 },
             ]
-            text = request_to_multymodal_V2(conversation=conversation, image= image, tokens=500)
+            text = request_to_multymodal_V2(conversation=conversation, image= image, tokens=800)
             
             competitor_photos.append(text)
 
-
+    
     return (our_photos, competitor_photos)
 
 def send_answer_to_fonts_analysis(success: bool, message:str, data: task_pb2.CheckFontsData):
