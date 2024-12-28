@@ -476,6 +476,7 @@ def callback(ch, method, properties, body):
                 value=result
                 ))
         except Exception as ex:
+            print(ex)
             send_answer_to_reviews_v2(False, f"Error generating reviews message: {ex}", task_pb2.ReviewsAnalysisV2(
                 id=message.id,
                 value=""
@@ -492,6 +493,7 @@ def callback(ch, method, properties, body):
                 value=result
                 ))
         except Exception as ex:
+            print(ex)
             send_answer_to_description_v2(False, f"Error generating reviews message: {ex}", task_pb2.SEOAnalysisV2(
                 id=message.id,
                 value=""
@@ -509,6 +511,7 @@ def callback(ch, method, properties, body):
                 ))
             print (result)
         except Exception as ex:
+            print(ex)
             send_answer_to_description_v2(False, f"Error generating reviews message: {ex}", task_pb2.SEOAnalysisV2(
                 id=message.id,
                 value=""
