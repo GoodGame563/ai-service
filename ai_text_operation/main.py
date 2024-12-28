@@ -500,7 +500,7 @@ def callback(ch, method, properties, body):
         # try:
             message = PhotoReport(**json.loads(body))
             result = generate_photo_analysis(message)
-            send_answer_to_description_v2(True,  f"Success", task_pb2.SEOAnalysisV2(
+            send_answer_to_analys_all(True,  f"Success", task_pb2.PhotoAnalysisV2(
                 id=message.id,
                 value=result
                 ))
