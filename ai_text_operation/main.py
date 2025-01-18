@@ -337,60 +337,63 @@ def generate_by_reviews_v2(reviews:ReviewsMessageV2) -> str:
     request = requests.get(reviews.product.reviews_url)
     r_reviews = request.text
     for r in reviews.competitors:
-        prompt = f"Данные для анализа:\n\n1. Наше название :\n {reviews.product.name} \n Наши отзывы{r_reviews}"
-        request = requests.get(r.reviews_url)
-        r_r = request.text
-        prompt += f"Название конкурентов {r.name}\nОтзывы конкурентов {r_r}"
+        try:
+            prompt = f"Данные для анализа:\n\n1. Наше название :\n {reviews.product.name} \n Наши отзывы{r_reviews}"
+            request = requests.get(r.reviews_url)
+            r_r = request.text
+            prompt += f"Название конкурентов {r.name}\nОтзывы конкурентов {r_r}"
 
 
-        messages = [
-            {"role": "system", "content": """Вот список отзывов о нашем продукте и продуктах конкурентов на маркетплейсе. Проанализируй их и предоставь следующие данные:
+            messages = [
+                {"role": "system", "content": """Вот список отзывов о нашем продукте и продуктах конкурентов на маркетплейсе. Проанализируй их и предоставь следующие данные:
 
-                Что хвалят в продуктах конкурентов? Перечисли основные достоинства, которые отмечают пользователи.
-                Какие недостатки конкурентов упоминаются наиболее часто?
-                Что пользователи хвалят в нашем продукте?
-                Какие недостатки упоминаются в отзывах о нашем продукте?
-                На основании анализа, предложи идеи для улучшения нашего товара, чтобы он стал привлекательнее для покупателей, учитывая сильные стороны конкурентов.
-                Формат ответа:
-                1. Достоинства конкурентов:
+                    Что хвалят в продуктах конкурентов? Перечисли основные достоинства, которые отмечают пользователи.
+                    Какие недостатки конкурентов упоминаются наиболее часто?
+                    Что пользователи хвалят в нашем продукте?
+                    Какие недостатки упоминаются в отзывах о нашем продукте?
+                    На основании анализа, предложи идеи для улучшения нашего товара, чтобы он стал привлекательнее для покупателей, учитывая сильные стороны конкурентов.
+                    Формат ответа:
+                    1. Достоинства конкурентов:
 
-                [Описание достоинства 1]
-                [Описание достоинства 2]
-                2. Недостатки конкурентов:
+                    [Описание достоинства 1]
+                    [Описание достоинства 2]
+                    2. Недостатки конкурентов:
 
-                [Описание недостатка 1]
-                [Описание недостатка 2]
-                3. Достоинства нашего товара:
+                    [Описание недостатка 1]
+                    [Описание недостатка 2]
+                    3. Достоинства нашего товара:
 
-                [Описание достоинства 1]
-                [Описание достоинства 2]
-                4. Недостатки нашего товара:
+                    [Описание достоинства 1]
+                    [Описание достоинства 2]
+                    4. Недостатки нашего товара:
 
-                [Описание недостатка 1]
-                [Описание недостатка 2]
-                5. Рекомендации по улучшению:
+                    [Описание недостатка 1]
+                    [Описание недостатка 2]
+                    5. Рекомендации по улучшению:
 
-                [Описание рекомендации 1]
-                [Описание рекомендации 2]"""},
-            {"role": "user", "content": prompt}
-        ]
-        text = tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True
-        )
-        model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
+                    [Описание рекомендации 1]
+                    [Описание рекомендации 2]"""},
+                {"role": "user", "content": prompt}
+            ]
+            text = tokenizer.apply_chat_template(
+                messages,
+                tokenize=False,
+                add_generation_prompt=True
+            )
+            model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
 
-        generated_ids = model.generate(
-            **model_inputs,
-            temperature=0.8,
-            max_new_tokens=2048
-        )
-        generated_ids = [
-            output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
-        ]
-        final += "Анализ"
-        final += tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+            generated_ids = model.generate(
+                **model_inputs,
+                temperature=0.8,
+                max_new_tokens=2048
+            )
+            generated_ids = [
+                output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
+            ]
+            final += "Анализ"
+            final += tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+        except Exception as e:
+            print(f"Error during analysis: {e}")
     # print("анализ отзывов")
     # print(final)
     return final
