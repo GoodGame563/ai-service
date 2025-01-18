@@ -469,6 +469,7 @@ def send_answer_to_analys_all(success: bool, message:str, data: task_pb2.PhotoAn
         return
 def callback(ch, method, properties, body):
     raw_type_message = json.loads(body)
+    print(raw_type_message)
     if str(raw_type_message['type']) == 'reviews':
         try:
             print(json.loads(body))
@@ -507,6 +508,7 @@ def callback(ch, method, properties, body):
             return 
     elif str(raw_type_message['type']) == 'photo_report':
         try:
+
             message = PhotoReport(**json.loads(body))
             result = generate_photo_analysis(message)
             send_answer_to_analys_all(True,  f"Success", task_pb2.PhotoAnalysisV2(
