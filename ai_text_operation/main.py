@@ -17,6 +17,7 @@ import task_pb2_grpc
 import pika
 import torch
 import json
+from typing import Optional
 
 
 load_dotenv()
@@ -24,7 +25,7 @@ class PhotoReport(BaseModel):
     id: int 
     type: str
     our_photos: list[str]
-    competitor_photos: list[str]
+    competitor_photos: Optional[list[str]]
 
 class ReviewsProductItemV2(BaseModel):
     name: str
