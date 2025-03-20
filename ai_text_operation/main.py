@@ -344,9 +344,8 @@ def generate_by_reviews_v2(reviews:ReviewsMessageV2) -> str:
             prompt = f"Данные для анализа:\n\n1. Наше название :\n {reviews.product.name} \n Наши отзывы{r_reviews}"
             request = requests.get(r.reviews_url)
             r_r = request.text
+            print(type(r_r))
             prompt += f"Название конкурентов {r.name}\nОтзывы конкурентов {r_r}"
-
-
             messages = [
                 {"role": "system", "content": """Вот список отзывов о нашем продукте и продуктах конкурентов на маркетплейсе. Проанализируй их и предоставь следующие данные:
 
