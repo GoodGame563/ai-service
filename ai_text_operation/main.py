@@ -18,6 +18,7 @@ import pika
 import torch
 import json
 from typing import Optional
+from tqdm import tqdm
 
 
 load_dotenv()
@@ -337,8 +338,8 @@ def generate_by_reviews_v2(reviews:ReviewsMessageV2) -> str:
     final = ""
     request = requests.get(reviews.product.reviews_url)
     r_reviews = request.text
-    print(r_reviews)
-    for r in reviews.competitors:
+    print(reviews.competitors)
+    for r in tqdm(reviews.competitors):
         try:
             prompt = f"Данные для анализа:\n\n1. Наше название :\n {reviews.product.name} \n Наши отзывы{r_reviews}"
             request = requests.get(r.reviews_url)
@@ -387,7 +388,7 @@ def generate_by_reviews_v2(reviews:ReviewsMessageV2) -> str:
             generated_ids = model.generate(
                 **model_inputs,
                 temperature=0.8,
-                max_new_tokens=2048
+                max_new_tokens=1048
             )
             generated_ids = [
                 output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
